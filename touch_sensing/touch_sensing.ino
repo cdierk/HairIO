@@ -59,10 +59,7 @@ void setGestureThresholds() {
 
 
 void setup()
-{
-
-  Serial.begin(115200);
-  
+{ 
   setGestureThresholds();
 
   TCCR1A = 0b10000010;      //-Set up frequency generator
@@ -148,7 +145,6 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
 
 void loop()
 {
-  int counter = 0;
   for (unsigned int d = 0; d < N; d++)
   {
     int v = analogRead(0);  //-Read response signal
