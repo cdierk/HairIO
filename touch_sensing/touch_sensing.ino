@@ -32,7 +32,7 @@
 #define CHK(x,y) (x & (1<<y))               // |
 #define TOG(x,y) (x^=(1<<y))                //-+
 
-
+#define LED 13 // LED for serial-less debugging.
 
 #define N 160  //How many frequencies
 
@@ -70,20 +70,20 @@ void setup()
 
   pinMode(9, OUTPUT);       //-Signal generator pin
   pinMode(8, OUTPUT);       //-Sync (test) pin
-
-  Serial.begin(115200);
+  pinMode(LED, OUTPUT);
 
   // initialize results array to all zeros
   memset(results,0,sizeof(results));
-
 }
 
 
 
 
 void processGesture() {
-  if (curGesture != lastGesture) {
-    Serial.println(names[curGesture]);
+  if (curGesture == 1) {
+    digitalWrite(LED, HIGH);
+  } else {
+    digitalWrite(LED, LOW);
   }
 }
 
@@ -121,29 +121,14 @@ float dist(float x1, float y1, float x2, float y2) {
 
 void analyzeInput(float timeArr[], float voltageArr[]) {
 
-/*
-  float gestureOneDiff = 0;
-  float gestureTwoDiff = 0;
-  float gestureThreeDiff = 0;
-  */
-
   /* ====================================================================
     Gesture compare
     ====================================================================  */
   int currentMax = 0;
   float currentMaxValue = -1;
   for (int i = 0; i < 2; i++)
-
   {
-
-    // This sets the thresholds when clicking on the UI elements
-    //      if (mousePressed && mouseX > 750 && mouseX<800 && mouseY > 100*(i+1) && mouseY < 100*(i+1) + 50)
-    //      {
-    //        gesturePoints[i][0] = timeArr[MyArduinoGraph.maxI];
-    //        gesturePoints[i][1] = voltageArr[MyArduinoGraph.maxI];
-    //      }
-
-    //calucalte individual dist
+    //calculate individual dist
     gestureDist[i] = dist(getMaxFromArray(timeArr, N), getMaxFromArray(voltageArr, N), gesturePoints[i][0], gesturePoints[i][1]);
     if (gestureDist[i] < currentMaxValue || i == 0)
     {
@@ -151,14 +136,7 @@ void analyzeInput(float timeArr[], float voltageArr[]) {
       currentMaxValue =  gestureDist[i];
     }
   }
-  // this is a confidence measure?
-  /*
-  for (int i = 0; i < 4; i++) {
-    float currentAmmount = 0;
-    currentAmmount = 1 - gestureDist[i] / totalDist;
-  }
-  */
-
+  
   int type = currentMax;
   lastGesture = curGesture;
   curGesture = type;
