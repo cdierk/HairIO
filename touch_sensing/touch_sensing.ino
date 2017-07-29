@@ -61,6 +61,8 @@ void setGestureThresholds() {
 void setup()
 {
 
+  Serial.begin(115200);
+  
   setGestureThresholds();
 
   TCCR1A = 0b10000010;      //-Set up frequency generator
@@ -100,6 +102,11 @@ float getMaxFromArray(float* array, int size) {
 
 //assumes no negative values for time or voltage
 float dist(float x1, float y1, float x2, float y2) {
+  Serial.print("x1: ");
+  Serial.print(x1);
+  Serial.print(", y1: ");
+  Serial.print(y1);
+  Serial.println("");
   float xmax = max(x1, x2);
   float ymax = max(y1, y2);
 
@@ -116,6 +123,13 @@ float dist(float x1, float y1, float x2, float y2) {
     h = y2 - y1;
   }
 
+  float val = sqrt(h*h + w*w);
+  int intVal = (int) sqrt(h*h + w*w);
+  Serial.print("sqrt: ");
+  Serial.print(val);
+  Serial.print(", int casted: ");
+  Serial.println(intVal);
+  
   return sqrt(h * h + w * w);
 }
 
