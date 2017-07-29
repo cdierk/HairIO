@@ -2,6 +2,8 @@
 // Adapted from https://github.com/Illutron/AdvancedTouchSensing
 // Moves the gesture analysis from Processing to run entirely on Arduino, with fixed thresholds
 // July 21 2017
+//
+//Added Bluetooth code adapted from Adafruit nRF51822 Bluefruit source code
 //****************************************************************************************
 
 
@@ -25,7 +27,14 @@
 //            |      |
 //           GND    GND
 
+#include <Arduino.h>
+#if not defined (_VARIANT_ARDUINO_DUE_X_) && not defined (_VARIANT_ARDUINO_ZERO_)
+  #include <SoftwareSerial.h>
+#endif
 
+#include "Adafruit_BLE.h"
+#include "Adafruit_BluefruitLE_UART.h"
+#include "BluefruitConfig.h"
 
 #define SET(x,y) (x |=(1<<y))        //-Bit set/clear macros
 #define CLR(x,y) (x &= (~(1<<y)))           // |
@@ -35,6 +44,13 @@
 #define LED 13 // LED for serial-less debugging.
 
 #define N 160  //How many frequencies
+
+// Create the bluefruit object in software serial
+
+SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
+
+Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
+                      BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
 
 //Gesture sensing variables
 int results[N];            //-Filtered result buffer
@@ -73,6 +89,22 @@ void setup()
 
   // initialize results array to all zeros
   memset(results,0,sizeof(results));
+
+  ble.begin();
+
+  /* Disable command echo from Bluefruit */
+  ble.echo(false);
+
+  ble.info();
+  
+  /* Wait for connection */
+  while (! ble.isConnected()) {
+      delay(500);
+  }
+
+  // Set module to DATA mode
+  //Serial.println( F("Switching to DATA mode!") );
+  ble.setMode(BLUEFRUIT_MODE_DATA);
 }
 
 
@@ -81,6 +113,12 @@ void setup()
 void processGesture() {
   if (curGesture == 1) {
     digitalWrite(LED, HIGH);
+    String s = F("braid touched                                       ");
+    uint8_t sendbuffer[20];
+    s.getBytes(sendbuffer, 20);
+    char sendbuffersize = min(20, s.length());
+
+    ble.write(sendbuffer, sendbuffersize);
   } else {
     digitalWrite(LED, LOW);
   }
@@ -171,6 +209,22 @@ void loop()
   // instead of sending to processing, do the work here
   analyzeInput(freq, results);
   processGesture();
+
+    String received = "";
+  
+  // Check to see if received toggle from Phone
+  while ( ble.available() )
+  {
+    int c = ble.read();
+    received = received + (char) c;
+    //Serial.println((char)c);
+    //Serial.println(received);
+    if (received.equals("!B10;")){
+      digitalWrite(LED,HIGH);
+    } else if (received.equals("!B219")){
+      digitalWrite(LED,LOW);
+    }
+  }
 
 
   TOG(PORTB, 0);           //-Toggle pin 8 after each sweep (good for scope)

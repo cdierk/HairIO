@@ -36,18 +36,27 @@
 
 #define N 160  //How many frequencies
 
+//mux
+#define muxApin 6
+#define muxBpin 5
+#define muxCpin 4
+int previousMillis = 0;
+int switchInterval = 5000;
+int state = 0;
+
+
 //Gesture sensing variables
-int results[N];            //-Filtered result buffer
-int freq[N];            //-Filtered result buffer
+float results[N];            //-Filtered result buffer
+float freq[N];            //-Filtered result buffer
 int sizeOfArray = N;
 
 //Gesture processing variables
 float gesturePoints[2][2];
-int gestureDist[2];
+float gestureDist[2];
 String names[2] = {"nothing", "touch"};
 
-char curGesture = 0;
-char lastGesture = 0;
+int curGesture = 0;
+int lastGesture = 0;
 
 void setGestureThresholds() {
   gesturePoints[0][0] = 34;
@@ -59,7 +68,8 @@ void setGestureThresholds() {
 
 
 void setup()
-{ 
+{
+
   setGestureThresholds();
 
   TCCR1A = 0b10000010;      //-Set up frequency generator
@@ -70,6 +80,10 @@ void setup()
   pinMode(9, OUTPUT);       //-Signal generator pin
   pinMode(8, OUTPUT);       //-Sync (test) pin
   pinMode(LED, OUTPUT);
+  pinMode(muxApin, OUTPUT);
+  pinMode(muxBpin, OUTPUT);
+  pinMode(muxCpin, OUTPUT);
+
 
   // initialize results array to all zeros
   memset(results,0,sizeof(results));
@@ -87,7 +101,7 @@ void processGesture() {
 }
 
 //adapted from http://forum.arduino.cc/index.php?topic=41999.0
-int getMaxFromArray(int* array, int size) {
+float getMaxFromArray(float* array, int size) {
   int max = array[0];
   for (int i = 1; i < size; i++) {
     if (max < array[i]) {
@@ -98,10 +112,9 @@ int getMaxFromArray(int* array, int size) {
 }
 
 //assumes no negative values for time or voltage
-int dist(int x1, int y1, int x2, int y2) {
-
-  int xmax = max(x1, x2);
-  int ymax = max(y1, y2);
+float dist(float x1, float y1, float x2, float y2) {
+  float xmax = max(x1, x2);
+  float ymax = max(y1, y2);
 
   float w;
   if (x1 > x2) {
@@ -115,18 +128,17 @@ int dist(int x1, int y1, int x2, int y2) {
   } else {
     h = y2 - y1;
   }
-  
-  int intVal = (int) sqrt(h*h + w*w);
-  return intVal;
+
+  return sqrt(h * h + w * w);
 }
 
-void analyzeInput(int timeArr[], int voltageArr[]) {
+void analyzeInput(float timeArr[], float voltageArr[]) {
 
   /* ====================================================================
     Gesture compare
     ====================================================================  */
   int currentMax = 0;
-  int currentMaxValue = -1;
+  float currentMaxValue = -1;
   for (int i = 0; i < 2; i++)
   {
     //calculate individual dist
@@ -145,6 +157,9 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
 
 void loop()
 {
+  unsigned int d;
+
+  int counter = 0;
   for (unsigned int d = 0; d < N; d++)
   {
     int v = analogRead(0);  //-Read response signal
@@ -154,9 +169,8 @@ void loop()
     OCR1A = d / 2;          //-+
     SET(TCCR1B, 0);         //-Restart generator
 
-    int testVal = results[d] * 0.5 + v*0.5;
-    results[d] = testVal;
-    //results[d] = results[d] * 0.5 + (float)(v) * 0.5; //Filter results
+    results[d] = results[d] * 0.5 + (float)(v) * 0.5; //Filter results
+
     freq[d] = d;
 
     //   plot(v,0);              //-Display
@@ -172,6 +186,36 @@ void loop()
   analyzeInput(freq, results);
   processGesture();
 
+      //mux
+    unsigned int currentMillis = millis();
+    if(currentMillis - previousMillis > switchInterval) {
+      // save the last time you switched 
+      previousMillis = currentMillis;   
+ 
+      if (state == 0){
+        digitalWrite(muxApin, 0);
+        digitalWrite(muxBpin, 0);
+        digitalWrite(muxCpin, 0);
+        state++;
+      } else if (state == 1){
+        digitalWrite(muxApin, 1);
+        digitalWrite(muxBpin, 0);
+        digitalWrite(muxCpin, 0);
+        state++;
+      } else if (state == 2){
+        digitalWrite(muxApin, 0);
+        digitalWrite(muxBpin, 1);
+        digitalWrite(muxCpin, 0);
+        state++;
+      } else {
+        digitalWrite(muxApin, 1);
+        digitalWrite(muxBpin, 1);
+        digitalWrite(muxCpin, 0);
+        state = 0;
+      }
+    
+
+    }
 
   TOG(PORTB, 0);           //-Toggle pin 8 after each sweep (good for scope)
 }
