@@ -122,14 +122,8 @@ int dist(float x1, float y1, float x2, float y2) {
   } else {
     h = y2 - y1;
   }
-
-  float val = sqrt(h*h + w*w);
-  int intVal = (int) sqrt(h*h + w*w);
-  Serial.print("sqrt: ");
-  Serial.print(val);
-  Serial.print(", int casted: ");
-  Serial.println(intVal);
   
+  int intVal = (int) sqrt(h*h + w*w);
   return intVal;
 }
 
