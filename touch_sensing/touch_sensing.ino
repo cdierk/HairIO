@@ -130,7 +130,6 @@ void analyzeInput(float timeArr[], float voltageArr[]) {
   /* ====================================================================
     Gesture compare
     ====================================================================  */
-  float totalDist = 0;
   int currentMax = 0;
   float currentMaxValue = -1;
   for (int i = 0; i < 2; i++)
@@ -146,16 +145,12 @@ void analyzeInput(float timeArr[], float voltageArr[]) {
 
     //calucalte individual dist
     gestureDist[i] = dist(getMaxFromArray(timeArr, N), getMaxFromArray(voltageArr, N), gesturePoints[i][0], gesturePoints[i][1]);
-    totalDist = totalDist + gestureDist[i];
     if (gestureDist[i] < currentMaxValue || i == 0)
     {
       currentMax = i;
       currentMaxValue =  gestureDist[i];
     }
   }
-
-  totalDist = totalDist / 3;
-
   // this is a confidence measure?
   /*
   for (int i = 0; i < 4; i++) {
