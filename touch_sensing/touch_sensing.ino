@@ -144,8 +144,6 @@ void analyzeInput(float timeArr[], float voltageArr[]) {
 
 void loop()
 {
-  unsigned int d;
-
   int counter = 0;
   for (unsigned int d = 0; d < N; d++)
   {
