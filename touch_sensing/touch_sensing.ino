@@ -46,8 +46,8 @@ float gesturePoints[2][2];
 float gestureDist[2];
 String names[2] = {"nothing", "touch"};
 
-int curGesture = 0;
-int lastGesture = 0;
+char curGesture = 0;
+char lastGesture = 0;
 
 void setGestureThresholds() {
   gesturePoints[0][0] = 34;
