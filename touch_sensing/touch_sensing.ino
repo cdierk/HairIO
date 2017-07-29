@@ -43,7 +43,7 @@ int sizeOfArray = N;
 
 //Gesture processing variables
 float gesturePoints[2][2];
-float gestureDist[2];
+int gestureDist[2];
 String names[2] = {"nothing", "touch"};
 
 char curGesture = 0;
@@ -101,7 +101,7 @@ float getMaxFromArray(float* array, int size) {
 }
 
 //assumes no negative values for time or voltage
-float dist(float x1, float y1, float x2, float y2) {
+int dist(float x1, float y1, float x2, float y2) {
   Serial.print("x1: ");
   Serial.print(x1);
   Serial.print(", y1: ");
@@ -130,7 +130,7 @@ float dist(float x1, float y1, float x2, float y2) {
   Serial.print(", int casted: ");
   Serial.println(intVal);
   
-  return sqrt(h * h + w * w);
+  return intVal;
 }
 
 void analyzeInput(float timeArr[], float voltageArr[]) {
@@ -139,7 +139,7 @@ void analyzeInput(float timeArr[], float voltageArr[]) {
     Gesture compare
     ====================================================================  */
   int currentMax = 0;
-  float currentMaxValue = -1;
+  int currentMaxValue = -1;
   for (int i = 0; i < 2; i++)
   {
     //calculate individual dist
