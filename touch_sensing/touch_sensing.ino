@@ -37,8 +37,8 @@
 #define N 160  //How many frequencies
 
 //Gesture sensing variables
-float results[N];            //-Filtered result buffer
-float freq[N];            //-Filtered result buffer
+int results[N];            //-Filtered result buffer
+int freq[N];            //-Filtered result buffer
 int sizeOfArray = N;
 
 //Gesture processing variables
@@ -90,7 +90,7 @@ void processGesture() {
 }
 
 //adapted from http://forum.arduino.cc/index.php?topic=41999.0
-float getMaxFromArray(float* array, int size) {
+int getMaxFromArray(int* array, int size) {
   int max = array[0];
   for (int i = 1; i < size; i++) {
     if (max < array[i]) {
@@ -101,14 +101,10 @@ float getMaxFromArray(float* array, int size) {
 }
 
 //assumes no negative values for time or voltage
-int dist(float x1, float y1, float x2, float y2) {
-  Serial.print("x1: ");
-  Serial.print(x1);
-  Serial.print(", y1: ");
-  Serial.print(y1);
-  Serial.println("");
-  float xmax = max(x1, x2);
-  float ymax = max(y1, y2);
+int dist(int x1, int y1, int x2, int y2) {
+
+  int xmax = max(x1, x2);
+  int ymax = max(y1, y2);
 
   float w;
   if (x1 > x2) {
@@ -127,7 +123,7 @@ int dist(float x1, float y1, float x2, float y2) {
   return intVal;
 }
 
-void analyzeInput(float timeArr[], float voltageArr[]) {
+void analyzeInput(int timeArr[], int voltageArr[]) {
 
   /* ====================================================================
     Gesture compare
@@ -162,8 +158,9 @@ void loop()
     OCR1A = d / 2;          //-+
     SET(TCCR1B, 0);         //-Restart generator
 
-    results[d] = results[d] * 0.5 + (float)(v) * 0.5; //Filter results
-
+    int testVal = results[d] * 0.5 + v*0.5;
+    results[d] = testVal;
+    //results[d] = results[d] * 0.5 + (float)(v) * 0.5; //Filter results
     freq[d] = d;
 
     //   plot(v,0);              //-Display
