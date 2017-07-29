@@ -41,16 +41,13 @@ float results[N];            //-Filtered result buffer
 float freq[N];            //-Filtered result buffer
 int sizeOfArray = N;
 
-
 //Gesture processing variables
-float gesturePoints[4][2];
-float gestureDist[4];
-String names[4] = {"nothing", "touch", "another", "another2"};
+float gesturePoints[2][2];
+float gestureDist[2];
+String names[2] = {"nothing", "touch"};
 
 int curGesture = 0;
 int lastGesture = 0;
-
-
 
 void setGestureThresholds() {
   gesturePoints[0][0] = 34;
@@ -58,12 +55,6 @@ void setGestureThresholds() {
 
   gesturePoints[1][0] = 50;
   gesturePoints[1][1] = 400;
-
-  gesturePoints[2][0] = 1000;
-  gesturePoints[2][1] = 1000;
-
-  gesturePoints[3][0] = 1000;
-  gesturePoints[3][1] = 1000;
 }
 
 
@@ -84,6 +75,96 @@ void setup()
 
   for (int i = 0; i < N; i++) //-Preset results
     results[i] = 0;       //-+
+}
+
+
+
+void processGesture() {
+  if (curGesture != lastGesture) {
+    Serial.println(names[curGesture]);
+  }
+}
+
+//adapted from http://forum.arduino.cc/index.php?topic=41999.0
+float getMaxFromArray(float* array, int size) {
+  int max = array[0];
+  for (int i = 1; i < size; i++) {
+    if (max < array[i]) {
+      max = array[i];
+    }
+  }
+  return max;
+}
+
+//assumes no negative values for time or voltage
+float dist(float x1, float y1, float x2, float y2) {
+  float xmax = max(x1, x2);
+  float ymax = max(y1, y2);
+
+  float w;
+  if (x1 > x2) {
+    w = x1 - x2;
+  } else {
+    w = x2 - x1;
+  }
+  float h;
+  if (y1 > y2) {
+    h = y1 - y2;
+  } else {
+    h = y2 - y1;
+  }
+
+  return sqrt(h * h + w * w);
+}
+
+void analyzeInput(float timeArr[], float voltageArr[]) {
+
+/*
+  float gestureOneDiff = 0;
+  float gestureTwoDiff = 0;
+  float gestureThreeDiff = 0;
+  */
+
+  /* ====================================================================
+    Gesture compare
+    ====================================================================  */
+  float totalDist = 0;
+  int currentMax = 0;
+  float currentMaxValue = -1;
+  for (int i = 0; i < 2; i++)
+
+  {
+
+    // This sets the thresholds when clicking on the UI elements
+    //      if (mousePressed && mouseX > 750 && mouseX<800 && mouseY > 100*(i+1) && mouseY < 100*(i+1) + 50)
+    //      {
+    //        gesturePoints[i][0] = timeArr[MyArduinoGraph.maxI];
+    //        gesturePoints[i][1] = voltageArr[MyArduinoGraph.maxI];
+    //      }
+
+    //calucalte individual dist
+    gestureDist[i] = dist(getMaxFromArray(timeArr, N), getMaxFromArray(voltageArr, N), gesturePoints[i][0], gesturePoints[i][1]);
+    totalDist = totalDist + gestureDist[i];
+    if (gestureDist[i] < currentMaxValue || i == 0)
+    {
+      currentMax = i;
+      currentMaxValue =  gestureDist[i];
+    }
+  }
+
+  totalDist = totalDist / 3;
+
+  // this is a confidence measure?
+  /*
+  for (int i = 0; i < 4; i++) {
+    float currentAmmount = 0;
+    currentAmmount = 1 - gestureDist[i] / totalDist;
+  }
+  */
+
+  int type = currentMax;
+  lastGesture = curGesture;
+  curGesture = type;
 }
 
 void loop()
@@ -120,91 +201,5 @@ void loop()
 
   TOG(PORTB, 0);           //-Toggle pin 8 after each sweep (good for scope)
 }
-
-void processGesture() {
-  if (curGesture != lastGesture) {
-    Serial.println(names[curGesture]);
-  }
-}
-
-void analyzeInput(float timeArr[], float voltageArr[]) {
-
-  float gestureOneDiff = 0;
-  float gestureTwoDiff = 0;
-  float gestureThreeDiff = 0;
-
-  /* ====================================================================
-    Gesture compare
-    ====================================================================  */
-  float totalDist = 0;
-  int currentMax = 0;
-  float currentMaxValue = -1;
-  for (int i = 0; i < 4; i++)
-
-  {
-
-    // This sets the thresholds when clicking on the UI elements
-    //      if (mousePressed && mouseX > 750 && mouseX<800 && mouseY > 100*(i+1) && mouseY < 100*(i+1) + 50)
-    //      {
-    //        gesturePoints[i][0] = timeArr[MyArduinoGraph.maxI];
-    //        gesturePoints[i][1] = voltageArr[MyArduinoGraph.maxI];
-    //      }
-
-    //calucalte individual dist
-    gestureDist[i] = dist(getMaxFromArray(timeArr, N), getMaxFromArray(voltageArr, N), gesturePoints[i][0], gesturePoints[i][1]);
-    totalDist = totalDist + gestureDist[i];
-    if (gestureDist[i] < currentMaxValue || i == 0)
-    {
-      currentMax = i;
-      currentMaxValue =  gestureDist[i];
-    }
-  }
-
-  totalDist = totalDist / 3;
-
-  // this is a confidence measure?
-  for (int i = 0; i < 4; i++) {
-    float currentAmmount = 0;
-    currentAmmount = 1 - gestureDist[i] / totalDist;
-  }
-
-
-  int type = currentMax;
-  lastGesture = curGesture;
-  curGesture = type;
-}
-
-//assumes no negative values for time or voltage
-float dist(float x1, float y1, float x2, float y2) {
-  float xmax = max(x1, x2);
-  float ymax = max(y1, y2);
-
-  float w;
-  if (x1 > x2) {
-    w = x1 - x2;
-  } else {
-    w = x2 - x1;
-  }
-  float h;
-  if (y1 > y2) {
-    h = y1 - y2;
-  } else {
-    h = y2 - y1;
-  }
-
-  return sqrt(h * h + w * w);
-}
-
-//adapted from http://forum.arduino.cc/index.php?topic=41999.0
-float getMaxFromArray(float* array, int size) {
-  int max = array[0];
-  for (int i = 1; i < size; i++) {
-    if (max < array[i]) {
-      max = array[i];
-    }
-  }
-  return max;
-}
-
 
 
