@@ -73,9 +73,11 @@ void setup()
 
   Serial.begin(115200);
 
-  for (int i = 0; i < N; i++) //-Preset results
-    results[i] = 0;       //-+
+  // initialize results array to all zeros
+  memset(results,0,sizeof(results));
+
 }
+
 
 
 
