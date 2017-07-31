@@ -42,8 +42,17 @@
 #define muxCpin 4
 int previousMillis = 0;
 int switchInterval = 5000;
-int state = 0;
+int currentBraid = 0;
 
+#define braid0 2    //pin for braid 0 output
+#define braid1 3    //pin for braid 1 output
+#define braid2 7    //pin for braid 2 output
+
+#define therm0 A1   //pin for braid 0 thermistor
+#define therm1 A2   //pin for braid 1 thermistor
+#define therm2 A3   //pin for braid 2 thermistor
+
+bool driving = false; //true if currently driving one of the braids
 
 //Gesture sensing variables
 float results[N];            //-Filtered result buffer
@@ -83,7 +92,9 @@ void setup()
   pinMode(muxApin, OUTPUT);
   pinMode(muxBpin, OUTPUT);
   pinMode(muxCpin, OUTPUT);
-
+  pinMode(braid0, OUTPUT);
+  pinMode(braid1, OUTPUT);
+  pinMode(braid2, OUTPUT);
 
   // initialize results array to all zeros
   memset(results,0,sizeof(results));
@@ -93,11 +104,11 @@ void setup()
 
 
 void processGesture() {
+  //input found on current braid
   if (curGesture == 1) {
-    digitalWrite(LED, HIGH);
-  } else {
-    digitalWrite(LED, LOW);
-  }
+    digitalWrite(currentBraid, HIGH);
+    driving = true;
+  } 
 }
 
 //adapted from http://forum.arduino.cc/index.php?topic=41999.0
@@ -186,33 +197,42 @@ void loop()
   analyzeInput(freq, results);
   processGesture();
 
-      //mux
+    //mux -- cycles through braids looking for input
     unsigned int currentMillis = millis();
-    if(currentMillis - previousMillis > switchInterval) {
+    
+    //doesn't cycle if powering one of the braids
+    if((currentMillis - previousMillis > switchInterval) && (driving == false)){
       // save the last time you switched 
       previousMillis = currentMillis;   
- 
-      if (state == 0){
+
+      if (currentBraid == braid0){               //mux pin0 is attached to same braid as Arduino pin2
         digitalWrite(muxApin, 0);
         digitalWrite(muxBpin, 0);
         digitalWrite(muxCpin, 0);
-        state++;
-      } else if (state == 1){
+        currentBraid = braid1;
+      } else if (currentBraid == braid1){        //mux pin1 is attached to same braid as Arduino pin3
         digitalWrite(muxApin, 1);
         digitalWrite(muxBpin, 0);
         digitalWrite(muxCpin, 0);
-        state++;
-      } else if (state == 2){
+        currentBraid = braid2;
+      } else {        //mux pin2 is attached to same braid as Arduino pin7
         digitalWrite(muxApin, 0);
         digitalWrite(muxBpin, 1);
         digitalWrite(muxCpin, 0);
-        state++;
-      } else {
-        digitalWrite(muxApin, 1);
-        digitalWrite(muxBpin, 1);
-        digitalWrite(muxCpin, 0);
-        state = 0;
+        currentBraid = braid0;
       }
+      if (driving == true) {
+        //check thermist0r reading of that braid. If > threshhold, digitalWrite(currentBraid, LOW), driving == false
+
+        //can use previousMillis for timing for now; basically stop and drive for 5 seconds
+        if (currentMillis - previousMillis > 5000){
+          //when 5 seconds is up
+          digitalWrite(currentBraid, LOW);
+          driving = false;
+        }
+      }
+
+      
     
 
     }
