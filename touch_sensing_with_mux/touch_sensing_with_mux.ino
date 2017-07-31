@@ -25,7 +25,8 @@
 //            |      |
 //           GND    GND
 
-
+//EDIT THIS ONE YAY!
+float tempThreshhold = 28.0;
 
 #define SET(x,y) (x |=(1<<y))        //-Bit set/clear macros
 #define CLR(x,y) (x &= (~(1<<y)))           // |
@@ -41,16 +42,33 @@
 #define muxBpin 5
 #define muxCpin 4
 int previousMillis = 0;
-int switchInterval = 5000;
-int currentBraid = 0;
+int switchInterval = 100;
+
+unsigned int currentMillis = 0;
 
 #define braid0 2    //pin for braid 0 output
 #define braid1 3    //pin for braid 1 output
 #define braid2 7    //pin for braid 2 output
 
+//thermistor specific stuff
 #define therm0 A1   //pin for braid 0 thermistor
 #define therm1 A2   //pin for braid 1 thermistor
 #define therm2 A3   //pin for braid 2 thermistor
+//resistance at 25 degrees C
+#define THERMISTORNOMINAL 10000
+// temperature for nominal resistance
+#define TEMPERATURENOMINAL 25
+//how many samples to take before averaging the temperature
+#define NUMSAMPLES 5
+//beta coefficient of the thermistor
+#define BCOEFFICIENT 3950
+//value of 'other' resistor
+#define SERIESRESISTOR 10000
+
+int currentBraid = braid0;
+int currentTherm = therm0;
+
+uint16_t samples[NUMSAMPLES];
 
 bool driving = false; //true if currently driving one of the braids
 
@@ -79,6 +97,8 @@ void setGestureThresholds() {
 void setup()
 {
 
+  Serial.begin(115200);
+
   setGestureThresholds();
 
   TCCR1A = 0b10000010;      //-Set up frequency generator
@@ -97,7 +117,7 @@ void setup()
   pinMode(braid2, OUTPUT);
 
   // initialize results array to all zeros
-  memset(results,0,sizeof(results));
+  memset(results,0,sizeof(results)); 
 }
 
 
@@ -105,7 +125,7 @@ void setup()
 
 void processGesture() {
   //input found on current braid
-  if (curGesture == 1) {
+  if ((curGesture == 1) && (currentMillis > 1000)){
     digitalWrite(currentBraid, HIGH);
     driving = true;
   } 
@@ -198,7 +218,7 @@ void loop()
   processGesture();
 
     //mux -- cycles through braids looking for input
-    unsigned int currentMillis = millis();
+    currentMillis = millis();
     
     //doesn't cycle if powering one of the braids
     if((currentMillis - previousMillis > switchInterval) && (driving == false)){
@@ -221,21 +241,50 @@ void loop()
         digitalWrite(muxCpin, 0);
         currentBraid = braid0;
       }
+    }
+    //only care about thermistor values if we're currently driving
       if (driving == true) {
-        //check thermist0r reading of that braid. If > threshhold, digitalWrite(currentBraid, LOW), driving == false
+        uint8_t i;
+        float average;
 
-        //can use previousMillis for timing for now; basically stop and drive for 5 seconds
-        if (currentMillis - previousMillis > 5000){
-          //when 5 seconds is up
+        //take N samples in a row, with a slight delay
+        if (currentBraid == braid0) currentTherm = therm0;
+        else if (currentBraid == braid1) currentTherm = therm1;
+        else if (currentBraid == braid2) currentTherm = therm2;
+        
+        for (i = 0; i < NUMSAMPLES; i++) {
+          samples[i] = analogRead(currentTherm); //doesn't matter right now, but we need this to correspond to the right braid
+          delay(10);
+        }
+
+        // average all the samples out
+        average = 0;
+        for (i = 0; i < NUMSAMPLES; i++) {
+          average += samples[i];
+        }
+        average /= NUMSAMPLES;
+
+        //convert these values to resistance
+        average = 1023 / average - 1;
+        average = SERIESRESISTOR / average;
+
+        //convert these values to temperature
+        average = average / THERMISTORNOMINAL;
+        average = log(average);
+        average /= BCOEFFICIENT;
+        average += 1.0 / (TEMPERATURENOMINAL + 273.15);
+        average = 1.0 / average;
+        average -= 273.15;
+
+        //average is now the temperature of the thermistor
+        Serial.println(average);
+
+        if (average >= tempThreshhold){
           digitalWrite(currentBraid, LOW);
           driving = false;
         }
       }
-
-      
-    
-
-    }
+   
 
   TOG(PORTB, 0);           //-Toggle pin 8 after each sweep (good for scope)
 }
