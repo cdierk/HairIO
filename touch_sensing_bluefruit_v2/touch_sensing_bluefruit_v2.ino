@@ -41,7 +41,7 @@
 #define CHK(x,y) (x & (1<<y))               // |
 #define TOG(x,y) (x^=(1<<y))                //-+
 
-#define LED 13 // LED for serial-less debugging.
+#define drive 2 // drive circuit
 
 #define N 160  //How many frequencies
 
@@ -57,6 +57,9 @@ int results[N];            //-Filtered result buffer
 int freq[N];            //-Filtered result buffer
 int sizeOfArray = N;
 
+//so that we don't send "braid touched" while drive circuit is running
+bool driving = false; 
+
 //Gesture processing variables
 float gesturePoints[2][2];
 int gestureDist[2];
@@ -67,10 +70,10 @@ char lastGesture = 0;
 
 void setGestureThresholds() {
   gesturePoints[0][0] = 34;
-  gesturePoints[0][1] = 540;
+  gesturePoints[0][1] = 390;
 
   gesturePoints[1][0] = 50;
-  gesturePoints[1][1] = 400;
+  gesturePoints[1][1] = 300;
 }
 
 
@@ -85,7 +88,7 @@ void setup()
 
   pinMode(9, OUTPUT);       //-Signal generator pin
   pinMode(8, OUTPUT);       //-Sync (test) pin
-  pinMode(LED, OUTPUT);
+  pinMode(drive, OUTPUT);
 
   // initialize results array to all zeros
   memset(results,0,sizeof(results));
@@ -111,16 +114,13 @@ void setup()
 
 
 void processGesture() {
-  if (curGesture == 1) {
-    digitalWrite(LED, HIGH);
+  if ((curGesture == 1) & (driving == false)){
     String s = F("braid touched                                       ");
     uint8_t sendbuffer[20];
     s.getBytes(sendbuffer, 20);
     char sendbuffersize = min(20, s.length());
 
     ble.write(sendbuffer, sendbuffersize);
-  } else {
-    digitalWrite(LED, LOW);
   }
 }
 
@@ -220,9 +220,11 @@ void loop()
     //Serial.println((char)c);
     //Serial.println(received);
     if (received.equals("!B10;")){
-      digitalWrite(LED,HIGH);
+      digitalWrite(drive,HIGH);
+      driving = true;
     } else if (received.equals("!B219")){
-      digitalWrite(LED,LOW);
+      digitalWrite(drive,LOW);
+      driving = false;
     }
   }
 
