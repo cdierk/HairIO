@@ -1,5 +1,5 @@
 
-int hair_pins[5] = {13, 10, 8, 4, 2};
+int hair_pins[5] = {4, 7, 8, 10, 13};
 int switch_pin = 2;
 
 //initialize in off state
@@ -23,7 +23,7 @@ void loop() {
 // switch the active hair
   if (state == LOW && digitalRead(switch_pin) == HIGH) {
     //debounce  
-    delay(20);
+    delay(50);
     
     if (digitalRead(switch_pin) == HIGH) {
       active_hair = (active_hair + 1) % 6; 
