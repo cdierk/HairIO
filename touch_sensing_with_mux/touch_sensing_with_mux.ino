@@ -211,10 +211,10 @@ void loop()
 
 
   //this would send the data to processing
-  //PlottArray(1,freq,results);
+  PlottArray(1,freq,results);
 
   // instead of sending to processing, do the work here
-  analyzeInput(freq, results);
+//  analyzeInput( freq, results);
   processGesture();
 
     //mux -- cycles through braids looking for input
@@ -229,7 +229,7 @@ void loop()
         digitalWrite(muxApin, 0);
         digitalWrite(muxBpin, 0);
         digitalWrite(muxCpin, 0);
-        currentBraid = braid1;
+        //currentBraid = braid1;
       } else if (currentBraid == braid1){        //mux pin1 is attached to same braid as Arduino pin3
         digitalWrite(muxApin, 1);
         digitalWrite(muxBpin, 0);

@@ -35,7 +35,7 @@ float tempThreshhold = 32.0;
 
 #define LED 13 // LED for serial-less debugging.
 
-#define N 160  //How many frequencies
+#define N 158  //How many frequencies
 
 //mux
 #define muxApin 6
@@ -86,22 +86,44 @@ int curGesture = 0;
 int lastGesture = 0;
 
 void setGestureThresholds() {
-  gesturePoints[0][0] = 80;
-  gesturePoints[0][1] = 340;
+//
+//  unsigned int d;
+//
+//  int counter = 0;
+//  for (unsigned int d = 0; d < N; d++)
+//  {
+//    int v = analogRead(0);  //-Read response signal
+//    CLR(TCCR1B, 0);         //-Stop generator
+//    TCNT1 = 0;              //-Reload new frequency
+//    ICR1 = d;               // |
+//    OCR1A = d / 2;          //-+
+//    SET(TCCR1B, 0);         //-Restart generator
+//
+//    results[d] = results[d] * 0.5 + (float)(v) * 0.5; //Filter results
+//
+//    freq[d] = d;
+//
+//    //   plot(v,0);              //-Display
+//    //   plot(results[d],1);
+//    // delayMicroseconds(1);
+//
+//  }
+//  float curmax = getMaxFromArray(results, N);
 
-  gesturePoints[1][0] = 80;
-  gesturePoints[1][1] = 280;
+  gesturePoints[0][0] = 0;
+  gesturePoints[0][1] = 350;
+
+  gesturePoints[1][0] = 0;
+  gesturePoints[1][1] = 310;
 }
 
 
 void setup()
 {
 
-  Serial.begin(115200);
-  Serial.println("STart");
-
-  setGestureThresholds();
-
+//  Serial.begin(115200);
+//  Serial.println("STart");
+  
   TCCR1A = 0b10000010;      //-Set up frequency generator
   TCCR1B = 0b00011001;      //-+
   ICR1 = 110;
@@ -124,7 +146,10 @@ void setup()
 
     digitalWrite(muxApin, 0);
     digitalWrite(muxBpin, 0);
-    digitalWrite(muxCpin, 1);
+    digitalWrite(muxCpin, 0);
+
+  setGestureThresholds();
+
 }
 
 
@@ -134,8 +159,11 @@ void processGesture() {
   //input found on current braid
   if ((curGesture == 1) && (currentMillis > 5000)){
     digitalWrite(currentBraid, HIGH);
+    digitalWrite(13, HIGH);
     driving = true;
-  } 
+  } else {
+     digitalWrite(13, LOW);
+  }
 }
 
 //adapted from http://forum.arduino.cc/index.php?topic=41999.0
@@ -175,25 +203,37 @@ void analyzeInput(float timeArr[], float voltageArr[]) {
   /* ====================================================================
     Gesture compare
     ====================================================================  */
-  int currentMax = 0;
-  float currentMaxValue = -1;
-  for (int i = 0; i < 2; i++)
-  {
-    //calculate individual dist
-    gestureDist[i] = dist(getMaxFromArray(timeArr, N), getMaxFromArray(voltageArr, N), gesturePoints[i][0], gesturePoints[i][1]);
-//    Serial.println(i);
-//    Serial.println(gestureDist[i]);
-
-    if (gestureDist[i] < currentMaxValue || i == 0)
-    {
-      currentMax = i;
-      currentMaxValue =  gestureDist[i];
-    }
-  }
   
-  int type = currentMax;
-  lastGesture = curGesture;
-  curGesture = type;
+//  if (currentMillis < 7000) {
+//      float gm = getMaxFromArray(voltageArr, N);
+//      gesturePoints[0][1] = gm;
+//      gesturePoints[1][1] = gm - 60;
+//
+//      Serial.println("setting thresholds:");
+//      Serial.println(gm);
+//  } else {
+  
+    int currentMax = 0;
+    float currentMaxValue = -1;
+    for (int i = 0; i < 2; i++)
+    {
+      //calculate individual dist
+      gestureDist[i] = dist(getMaxFromArray(timeArr, N), getMaxFromArray(voltageArr, N), gesturePoints[i][0], gesturePoints[i][1]);
+  //    Serial.println(i);
+  //    Serial.println(gestureDist[i]);
+  
+      if (gestureDist[i] < currentMaxValue || i == 0)
+      {
+        currentMax = i;
+        currentMaxValue =  gestureDist[i];
+      }
+    }
+  
+    int type = currentMax;
+    lastGesture = curGesture;
+    curGesture = type;
+//  }
+
 }
 
 void loop()
@@ -236,16 +276,19 @@ void loop()
 //      // save the last time you switched 
 //      previousMillis = currentMillis;   
 //
-//      if (currentBraid == braid0){               //mux pin0 is attached to same braid as Arduino pin2
-//        digitalWrite(muxApin, 0);
-//        digitalWrite(muxBpin, 0);
-//        digitalWrite(muxCpin, 0);
-//        //currentBraid = braid1;                 //UNCOMMENT THIS FOR MULTI-BRAID USE!
+      if (currentBraid == braid0){               //mux pin0 is attached to same braid as Arduino pin2
+        digitalWrite(muxApin, 0);
+        digitalWrite(muxBpin, 0);
+        digitalWrite(muxCpin, 0);
+        currentBraid = braid0;  
+      }
+       //UNCOMMENT THIS FOR MULTI-BRAID USE!
 //      } else if (currentBraid == braid1){        //mux pin1 is attached to same braid as Arduino pin3
 //        digitalWrite(muxApin, 1);
 //        digitalWrite(muxBpin, 0);
 //        digitalWrite(muxCpin, 0);
-//        currentBraid = braid2;
+//        currentBraid = braid0;
+//      }
 //      } else {        //mux pin2 is attached to same braid as Arduino pin7
 //        digitalWrite(muxApin, 0);
 //        digitalWrite(muxBpin, 1);
@@ -290,7 +333,7 @@ void loop()
         average -= 273.15;
 
         //average is now the temperature of the thermistor
-        Serial.println(average);
+//        Serial.println(average);
 
         if ( average <= 0.0){
           digitalWrite(currentBraid, LOW);
@@ -298,19 +341,13 @@ void loop()
           delay(5000);
           
         } else if (average >= tempThreshhold){
-          Serial.println("here inside kill");
+//          Serial.println("here inside kill");
           digitalWrite(currentBraid, LOW);
           driving = false;
         }
         
       }
 
-
-  //DO NOT REMOVE
-  digitalWrite(muxCpin, 0);
-  digitalWrite(muxBpin, 0);
-  digitalWrite(muxApin, 0);
-  
   TOG(PORTB, 0);           //-Toggle pin 8 after each sweep (good for scope)
 }
 
