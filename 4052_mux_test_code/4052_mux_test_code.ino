@@ -45,12 +45,6 @@ int currentBraid = 0;
 
 #define braidOutput 2   //pin for braid output
 
-#define therm0 A1   //pin for braid 0 thermistor
-#define therm1 A2   //pin for braid 1 thermistor
-#define therm2 A3   //pin for braid 2 thermistor
-
-bool driving = false; //true if currently driving one of the braids
-
 //Gesture sensing variables
 float results[N];            //-Filtered result buffer
 float freq[N];            //-Filtered result buffer
@@ -101,7 +95,8 @@ void processGesture() {
   //input found on current braid
   if (curGesture == 1) {
     digitalWrite(braidOutput, HIGH);
-    driving = true;
+    delay(1000); 
+    digitalWrite(braidOutput,LOW);
   } 
 }
 
@@ -195,7 +190,7 @@ void loop()
     unsigned int currentMillis = millis();
     
     //doesn't cycle if powering one of the braids
-    if((currentMillis - previousMillis > switchInterval) && (driving == false)){
+    if(currentMillis - previousMillis > switchInterval){
       // save the last time you switched 
       previousMillis = currentMillis;   
 
@@ -206,24 +201,8 @@ void loop()
       } else if (currentBraid == 1){        
         digitalWrite(muxApin, 1);
         digitalWrite(muxBpin, 0);
-        currentBraid = 2;
-      } else {        
-        digitalWrite(muxApin, 0);
-        digitalWrite(muxBpin, 1);
         currentBraid = 0;
-      }
-      if (driving == true) {
-        //check thermist0r reading of that braid. If > threshhold, digitalWrite(braidOutput, LOW), driving == false
-
-        //can use previousMillis for timing for now; basically stop and drive for 5 seconds
-        if (currentMillis - previousMillis > 5000){
-          //when 5 seconds is up
-          digitalWrite(braidOutput, LOW);
-          driving = false;
-        }
-      }
-
-      
+      }    
     
 
     }
