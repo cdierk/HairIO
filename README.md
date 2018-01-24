@@ -16,7 +16,14 @@ Shared Repository for Expressive Tresses and Programmable Plaits
   
   Total: 5 digital pins, 1 analog pin.
 
-# Programming TinyLily
+# TinyLily port notes
+The code writes directly to the [timers](https://playground.arduino.cc/Main/TimerPWMCheatsheet) on port B. 
+The TinyLily only exposes Port D and Port C. [Datasheet](https://cdn.shopify.com/s/files/1/1125/2198/files/ASM2101_Rev3.pdf?1845274497776763656). 
+Pins 0 and 1 of Port D are used for Serial comms, and using them can mess up uploading/programming.
+[Arduino port manipulation](https://playground.arduino.cc/Learning/PortManipulation)
+[More notes on timers](http://forum.arduino.cc/index.php?topic=43581.0)
+
+## Programming TinyLily
 1. Install correct FTDI drivers for your system by [going here.](http://www.ftdichip.com/Drivers/VCP.htm)
 2. Open Arduino IDE, and use the following settings:
 - Board to Arduino Pro or Pro Mini
