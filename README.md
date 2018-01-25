@@ -1,5 +1,5 @@
-# EEPP
-Shared Repository for Expressive Tresses and Programmable Plaits
+# HairIO: Human Hair as interactive Material
+Shared Repository for HairIO: Human Hair as interactive Material
 
 # Hardware details
 - Microcontroller: Arduino Nano.
