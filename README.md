@@ -1,6 +1,10 @@
 # EEPP
 Shared Repository for Expressive Tresses and Programmable Plaits
 
+# Hardware details
+- Microcontroller: Arduino Nano.
+- 
+
 # Circuit diagram for SFCS from Disney's Touche project, as shared by Illutron
 // Illutron take on Disney style capacitive touch sensor using only passives and Arduino
 // Dzl 2012
@@ -27,15 +31,26 @@ Shared Repository for Expressive Tresses and Programmable Plaits
 
 # Arduino pinout notes
 ## For mux_4052 code
-  pinMode(9, OUTPUT);       //-Signal generator pin  // digital PWM
-  pinMode(8, OUTPUT);       //-Sync (test) pin       // digital
-  pinMode(LED, OUTPUT);
-  pinMode(muxApin, OUTPUT);                          // pin 6, digital PWM
-  pinMode(muxBpin, OUTPUT);                          // pin 5, digital PWM
-  pinMode(braidOutput, OUTPUT);                      // pin 2, digital
-  // Also uses Analog 0 later.
+- pinMode(9, OUTPUT);       //-Signal generator pin  // digital PWM
+- pinMode(8, OUTPUT);       //-Sync (test) pin       // digital
+- pinMode(LED, OUTPUT);
+- pinMode(muxApin, OUTPUT);                          // pin 6, digital PWM
+- pinMode(muxBpin, OUTPUT);                          // pin 5, digital PWM
+- pinMode(braidOutput, OUTPUT);                      // pin 2, digital
+- // Also uses Analog 0 later.
   
   Total: 5 digital pins, 1 analog pin.
+  
+## For touch_sensing_bluefruit_v2 code
+// cap-sense pin
+- pinMode(9, OUTPUT);       //-Signal generator pin
+- pinMode(8, OUTPUT);       //-Sync (test) pin
+- pinMode(drive, OUTPUT);
+
+ //bluetooth:
+- BLUEFRUIT_UART_MODE_PIN,
+- BLUEFRUIT_UART_CTS_PIN, 
+- BLUEFRUIT_UART_RTS_PIN
 
 # TinyLily port notes
 The code writes directly to the [timers](https://playground.arduino.cc/Main/TimerPWMCheatsheet) on port B. 
@@ -56,3 +71,7 @@ Pins 0 and 1 of Port D are used for Serial comms, and using them can mess up upl
 
 # Datasheets
 [4052 mux from TI](http://www.ti.com/lit/ds/symlink/cd4051b.pdf)
+
+# demo
+One w/ everything: bluetooth, multiple braids
+One that talks over bluetooth
