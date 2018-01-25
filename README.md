@@ -1,8 +1,28 @@
 # EEPP
 Shared Repository for Expressive Tresses and Programmable Plaits
 
+# Circuit diagram for SFCS from Disney's Touche project, as shared by Illutron
+// Illutron take on Disney style capacitive touch sensor using only passives and Arduino
+// Dzl 2012
+
+
+
+//                              10n
+// PIN 9 --[10k]-+-----10mH---+--||-- OBJECT
+//               |            |
+//              3.3k          |
+//               |            V 1N4148 diode
+//              GND           |
+//                            |
+//Analog 0 ---+------+--------+
+//            |      |
+//          100pf   1MOmhm
+//            |      |
+//           GND    GND
+
 # Arduino code
 [mux_4052](https://github.com/cdierk/EEPP/tree/master/4052_mux_test_code) - newer version of mux that only requires two pins to select between 4 inputs. Uses [Disney's Touche that was ported to Arduino.](http://www.instructables.com/id/Touche-for-Arduino-Advanced-touch-sensing/)
+[touch_sensing_bluefruit_v2](https://github.com/cdierk/EEPP/tree/master/touch_sensing_bluefruit_v2) - Currently believe this is what's in the bluetooth-enabled demo box w/ brown hair that can actuate and communicate over bluetooth.
 
 # Arduino pinout notes
 ## For mux_4052 code
