@@ -67,11 +67,12 @@ Pins 0 and 1 of Port D are used for Serial comms, and using them can mess up upl
 3. Upload!
 
 # Resources
-[Instructables](http://www.instructables.com/id/Touche-for-Arduino-Advanced-touch-sensing/)
+[Instructable for Disney Touche's SFCS](http://www.instructables.com/id/Touche-for-Arduino-Advanced-touch-sensing/)
 
 # Datasheets
 [4052 mux from TI](http://www.ti.com/lit/ds/symlink/cd4051b.pdf)
 
 # demo
-One w/ everything: bluetooth, multiple braids
-One that talks over bluetooth
+- Multiple braids w/ BLE
+- Single braid w/ BLE
+- 
