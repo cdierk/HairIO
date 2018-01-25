@@ -6,7 +6,7 @@ Shared Repository for Expressive Tresses and Programmable Plaits
 // Dzl 2012
 
 
-
+```
 //                              10n
 // PIN 9 --[10k]-+-----10mH---+--||-- OBJECT
 //               |            |
@@ -19,6 +19,7 @@ Shared Repository for Expressive Tresses and Programmable Plaits
 //          100pf   1MOmhm
 //            |      |
 //           GND    GND
+```
 
 # Arduino code
 [mux_4052](https://github.com/cdierk/EEPP/tree/master/4052_mux_test_code) - newer version of mux that only requires two pins to select between 4 inputs. Uses [Disney's Touche that was ported to Arduino.](http://www.instructables.com/id/Touche-for-Arduino-Advanced-touch-sensing/)
