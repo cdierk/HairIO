@@ -22,8 +22,8 @@ Shared Repository for Expressive Tresses and Programmable Plaits
 ```
 
 # Arduino code
-[mux_4052](https://github.com/cdierk/EEPP/tree/master/4052_mux_test_code) - newer version of mux that only requires two pins to select between 4 inputs. Uses [Disney's Touche that was ported to Arduino.](http://www.instructables.com/id/Touche-for-Arduino-Advanced-touch-sensing/)
-[touch_sensing_bluefruit_v2](https://github.com/cdierk/EEPP/tree/master/touch_sensing_bluefruit_v2) - Currently believe this is what's in the bluetooth-enabled demo box w/ brown hair that can actuate and communicate over bluetooth.
+- [mux_4052](https://github.com/cdierk/EEPP/tree/master/4052_mux_test_code) - newer version of mux that only requires two pins to select between 4 inputs. Uses [Disney's Touche that was ported to Arduino.](http://www.instructables.com/id/Touche-for-Arduino-Advanced-touch-sensing/)
+- [touch_sensing_bluefruit_v2](https://github.com/cdierk/EEPP/tree/master/touch_sensing_bluefruit_v2) - Currently believe this is what's in the bluetooth-enabled demo box w/ brown hair that can actuate and communicate over bluetooth.
 
 # Arduino pinout notes
 ## For mux_4052 code
