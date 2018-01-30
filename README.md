@@ -55,8 +55,9 @@ Shared Repository for HairIO: Human Hair as interactive Material
 # Resources
 [Instructable for Disney Touche's SFCS](http://www.instructables.com/id/Touche-for-Arduino-Advanced-touch-sensing/)
 
-# Datasheets
+# Datasheets and Circuit Info
 [4052 mux from TI](http://www.ti.com/lit/ds/symlink/cd4051b.pdf)
+[Arduino Nano CAD files](https://forum.arduino.cc/index.php?topic=373897.0)
 
 # demo
 - Multiple braids w/ BLE
