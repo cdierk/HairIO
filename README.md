@@ -58,6 +58,8 @@ Shared Repository for HairIO: Human Hair as interactive Material
 # Datasheets and Circuit Info
 - [4052 mux from TI](http://www.ti.com/lit/ds/symlink/cd4051b.pdf)
 - [Arduino Nano CAD files](https://forum.arduino.cc/index.php?topic=373897.0)
+- [SPDT Slide switch datasheet from DigiKey](https://media.digikey.com/pdf/Data%20Sheets/C&K/SS-12D07-VG_GA_PA.pdf)
+  - For Eagle, use a 1x3-pin header from Pinhead since they are also 2mm apart.
 
 # demo
 - Multiple braids w/ BLE
