@@ -7000,9 +7000,7 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 </variantdefs>
 <classes>
 <class number="0" name="default" width="0" drill="0">
-</class>
-<class number="1" name="isolation" width="0" drill="0">
-<clearance class="1" value="0.4064"/>
+<clearance class="0" value="0.254"/>
 </class>
 </classes>
 <parts>
@@ -7184,7 +7182,7 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <wire x1="15.24" y1="76.2" x2="15.24" y2="68.58" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="CAPTOUCH_1" class="1">
+<net name="CAPTOUCH_1" class="0">
 <segment>
 <pinref part="MUX1" gate="G$2" pin="P$12"/>
 <wire x1="43.18" y1="129.54" x2="73.66" y2="129.54" width="0.1524" layer="91"/>
@@ -7475,7 +7473,7 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <label x="-17.78" y="129.54" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="DRIVE_SIGNAL_1" class="1">
+<net name="DRIVE_SIGNAL_1" class="0">
 <segment>
 <pinref part="R4" gate="G$1" pin="1"/>
 <wire x1="15.24" y1="58.42" x2="15.24" y2="53.34" width="0.1524" layer="91"/>
@@ -7507,7 +7505,7 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <junction x="-71.12" y="83.82"/>
 </segment>
 </net>
-<net name="A1_THERM_1" class="1">
+<net name="A1_THERM_1" class="0">
 <segment>
 <pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC1/A1"/>
 <wire x1="203.2" y1="101.6" x2="213.36" y2="101.6" width="0.1524" layer="91"/>
