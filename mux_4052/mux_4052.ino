@@ -77,12 +77,13 @@ void setup()
   ICR1 = 110;
   OCR1A = 55;
 
-  pinMode(9, OUTPUT);       //-Signal generator pin
-  pinMode(8, OUTPUT);       //-Sync (test) pin
+  pinMode(9, OUTPUT);       //-Signal generator pin  // digital PWM (is that important? IDK)
+  pinMode(8, OUTPUT);       //-Sync (test) pin       // digital
   pinMode(LED, OUTPUT);
-  pinMode(muxApin, OUTPUT);
-  pinMode(muxBpin, OUTPUT);
-  pinMode(braidOutput, OUTPUT);
+  pinMode(muxApin, OUTPUT);                          // pin 6, digital PWM
+  pinMode(muxBpin, OUTPUT);                          // pin 5, digital PWM
+  pinMode(braidOutput, OUTPUT);                      // pin 2, digital
+  // Also uses Analog 0
 
   // initialize results array to all zeros
   memset(results,0,sizeof(results));
