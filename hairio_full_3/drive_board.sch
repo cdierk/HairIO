@@ -7000,6 +7000,7 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 </variantdefs>
 <classes>
 <class number="0" name="default" width="0" drill="0">
+<clearance class="0" value="0.254"/>
 </class>
 </classes>
 <parts>
