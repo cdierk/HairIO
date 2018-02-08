@@ -6597,7 +6597,6 @@ Source: &lt;a href="http://www.molex.com/webdocs/datasheets/pdf/en-us//105313110
 <description>&lt;b&gt;Arduino Nano V3.0 Module&lt;/b&gt;
 
 &lt;p&gt;The Nano was designed and is being produced by &lt;a href="http://www.gravitech.us/arna30wiatp.html"&gt;Gravitech&lt;/a&gt;.&lt;/p&gt;&lt;br&gt;</description>
-<hole x="-22.86" y="-7.62" drill="1.778"/>
 <pad name="1" x="-20.32" y="-7.62" drill="0.8" shape="square"/>
 <pad name="2" x="-17.78" y="-7.62" drill="0.8"/>
 <pad name="3" x="-15.24" y="-7.62" drill="0.8"/>
@@ -6628,9 +6627,6 @@ Source: &lt;a href="http://www.molex.com/webdocs/datasheets/pdf/en-us//105313110
 <pad name="28" x="-15.24" y="7.62" drill="0.8"/>
 <pad name="29" x="-17.78" y="7.62" drill="0.8"/>
 <pad name="30" x="-20.32" y="7.62" drill="0.8"/>
-<hole x="-22.86" y="7.62" drill="1.778"/>
-<hole x="17.78" y="7.62" drill="1.778"/>
-<hole x="17.78" y="-7.62" drill="1.778"/>
 <wire x1="-24.13" y1="8.89" x2="17.78" y2="8.89" width="0.127" layer="21"/>
 <wire x1="17.78" y1="8.89" x2="19.05" y2="8.89" width="0.127" layer="21"/>
 <wire x1="19.05" y1="8.89" x2="19.05" y2="7.62" width="0.127" layer="21"/>
@@ -6651,44 +6647,8 @@ Source: &lt;a href="http://www.molex.com/webdocs/datasheets/pdf/en-us//105313110
 <wire x1="-19.05" y1="-2.54" x2="-25.4" y2="-2.54" width="0.127" layer="21"/>
 <text x="-17.78" y="0" size="1.27" layer="21" font="vector">&gt;NAME</text>
 <text x="-17.78" y="-2.54" size="1.27" layer="21" font="vector">&gt;VALUE</text>
-<circle x="0" y="0" radius="1.79605" width="0.127" layer="21"/>
-<text x="2.54" y="0" size="0.8128" layer="21" font="vector" rot="R90" align="center">Reset</text>
-<text x="-20.32" y="-6.35" size="1.016" layer="21" font="vector">1</text>
-<text x="-21.59" y="0" size="0.6096" layer="21" font="vector" rot="R270" align="center">Mini-B
-USB</text>
-<wire x1="19.05" y1="3.81" x2="13.97" y2="3.81" width="0.127" layer="21"/>
-<wire x1="13.97" y1="3.81" x2="13.97" y2="-3.81" width="0.127" layer="21"/>
-<wire x1="13.97" y1="-3.81" x2="19.05" y2="-3.81" width="0.127" layer="21"/>
-<circle x="17.78" y="-2.54" radius="0.8" width="0.127" layer="21"/>
-<circle x="17.78" y="0" radius="0.8" width="0.127" layer="21"/>
-<circle x="17.78" y="2.54" radius="0.8" width="0.127" layer="21"/>
-<circle x="15.24" y="2.54" radius="0.8" width="0.127" layer="21"/>
-<circle x="17.78" y="0" radius="0.8" width="0.127" layer="21"/>
-<circle x="15.24" y="0" radius="0.8" width="0.127" layer="21"/>
-<circle x="15.24" y="-2.54" radius="0.8" width="0.127" layer="21"/>
-<text x="12.7" y="1.27" size="0.8128" layer="21" font="vector" rot="SR270">ICSP</text>
-<text x="17.78" y="-4.445" size="1.016" layer="21" font="vector" rot="SR270">1</text>
-<polygon width="0.127" layer="21">
-<vertex x="15.24" y="6.35"/>
-<vertex x="13.97" y="5.08"/>
-<vertex x="16.51" y="5.08"/>
-</polygon>
-<polygon width="0.127" layer="21">
-<vertex x="12.7" y="5.08"/>
-<vertex x="13.97" y="6.35"/>
-<vertex x="11.43" y="6.35"/>
-</polygon>
-<text x="-22.86" y="-1.27" size="0.0508" layer="21" font="vector" ratio="1" rot="R90">This library was created by Esp. Marco-Luis SALCEDO TOVAR.
-Please report any errors or suggestions to: YV1HX@CANTV.NET
-Thanks you!!!</text>
 <wire x1="-24.13" y1="7.62" x2="-21.59" y2="7.62" width="0.015875" layer="21"/>
 <wire x1="-22.86" y1="8.89" x2="-22.86" y2="6.35" width="0.015875" layer="21"/>
-<wire x1="-24.13" y1="-7.62" x2="-21.59" y2="-7.62" width="0.015875" layer="21"/>
-<wire x1="-22.86" y1="-6.35" x2="-22.86" y2="-8.89" width="0.015875" layer="21"/>
-<wire x1="17.78" y1="-8.89" x2="17.78" y2="-6.35" width="0.015875" layer="21"/>
-<wire x1="16.51" y1="-7.62" x2="19.05" y2="-7.62" width="0.015875" layer="21"/>
-<wire x1="17.78" y1="6.35" x2="17.78" y2="8.89" width="0.015875" layer="21"/>
-<wire x1="16.51" y1="7.62" x2="19.05" y2="7.62" width="0.015875" layer="21"/>
 </package>
 </packages>
 <symbols>
@@ -6827,8 +6787,6 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <text x="0" y="-12.7" size="0.8128" layer="94" font="vector" align="center">Mini-B
 USB</text>
 <circle x="0" y="0" radius="2.54" width="0.254" layer="94"/>
-<text x="0" y="0" size="0.8128" layer="94" font="vector" rot="R180" align="center">RESET
-BUTTON</text>
 <text x="-15.24" y="-20.32" size="1.778" layer="95">&gt;NAME</text>
 <text x="-15.24" y="-22.86" size="1.778" layer="96">&gt;VALUE</text>
 <wire x1="-5.08" y1="25.4" x2="-5.08" y2="20.32" width="0.254" layer="94"/>
@@ -7002,7 +6960,6 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <class number="0" name="default" width="0" drill="0">
 </class>
 <class number="1" name="isolation" width="0" drill="0">
-<clearance class="1" value="1.524"/>
 </class>
 </classes>
 <parts>
@@ -7184,7 +7141,7 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <wire x1="15.24" y1="76.2" x2="15.24" y2="68.58" width="0.1524" layer="91"/>
 </segment>
 </net>
-<net name="CAPTOUCH_1" class="0">
+<net name="CAPTOUCH_1" class="1">
 <segment>
 <pinref part="MUX1" gate="G$2" pin="P$12"/>
 <wire x1="43.18" y1="129.54" x2="73.66" y2="129.54" width="0.1524" layer="91"/>
@@ -7251,9 +7208,9 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <label x="134.62" y="129.54" size="1.778" layer="95"/>
 </segment>
 <segment>
-<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC0/A0"/>
-<wire x1="203.2" y1="99.06" x2="213.36" y2="99.06" width="0.1524" layer="91"/>
-<label x="213.36" y="96.52" size="1.778" layer="95"/>
+<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC3/A3"/>
+<wire x1="203.2" y1="106.68" x2="210.82" y2="106.68" width="0.1524" layer="91"/>
+<label x="210.82" y="106.68" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="D6" class="0">
@@ -7493,11 +7450,6 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 </net>
 <net name="A2_THERM_2" class="0">
 <segment>
-<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC2/A2"/>
-<wire x1="203.2" y1="104.14" x2="213.36" y2="104.14" width="0.1524" layer="91"/>
-<label x="213.36" y="104.14" size="1.778" layer="95"/>
-</segment>
-<segment>
 <wire x1="-71.12" y1="88.9" x2="-71.12" y2="83.82" width="0.1524" layer="91"/>
 <label x="-71.12" y="60.96" size="1.778" layer="95" rot="R90"/>
 <pinref part="J2" gate="G$1" pin="2"/>
@@ -7506,13 +7458,13 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <wire x1="-71.12" y1="83.82" x2="-60.96" y2="83.82" width="0.1524" layer="91"/>
 <junction x="-71.12" y="83.82"/>
 </segment>
+<segment>
+<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC0/A0"/>
+<wire x1="203.2" y1="99.06" x2="210.82" y2="99.06" width="0.1524" layer="91"/>
+<label x="210.82" y="96.52" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="A1_THERM_1" class="1">
-<segment>
-<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC1/A1"/>
-<wire x1="203.2" y1="101.6" x2="213.36" y2="101.6" width="0.1524" layer="91"/>
-<label x="213.36" y="101.6" size="1.778" layer="95"/>
-</segment>
 <segment>
 <wire x1="38.1" y1="88.9" x2="38.1" y2="83.82" width="0.1524" layer="91"/>
 <label x="38.1" y="60.96" size="1.778" layer="95" rot="R90"/>
@@ -7521,6 +7473,11 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <wire x1="38.1" y1="83.82" x2="38.1" y2="71.12" width="0.1524" layer="91"/>
 <wire x1="38.1" y1="83.82" x2="48.26" y2="83.82" width="0.1524" layer="91"/>
 <junction x="38.1" y="83.82"/>
+</segment>
+<segment>
+<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC1/A1"/>
+<wire x1="203.2" y1="101.6" x2="210.82" y2="101.6" width="0.1524" layer="91"/>
+<label x="213.36" y="101.6" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$16" class="0">

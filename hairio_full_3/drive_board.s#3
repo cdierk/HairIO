@@ -7459,9 +7459,9 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <junction x="-71.12" y="83.82"/>
 </segment>
 <segment>
-<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC1/A1"/>
-<wire x1="203.2" y1="101.6" x2="210.82" y2="101.6" width="0.1524" layer="91"/>
-<label x="213.36" y="101.6" size="1.778" layer="95"/>
+<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC0/A0"/>
+<wire x1="203.2" y1="99.06" x2="210.82" y2="99.06" width="0.1524" layer="91"/>
+<label x="213.36" y="99.06" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="A1_THERM_1" class="1">
@@ -7475,9 +7475,9 @@ Each pin can provide or receive a maximum of 40 mA and has an internal pull-up r
 <junction x="38.1" y="83.82"/>
 </segment>
 <segment>
-<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC0/A0"/>
-<wire x1="203.2" y1="99.06" x2="210.82" y2="99.06" width="0.1524" layer="91"/>
-<label x="210.82" y="96.52" size="1.778" layer="95"/>
+<pinref part="ARDUINO_NANO1" gate="G$1" pin="ADC1/A1"/>
+<wire x1="203.2" y1="101.6" x2="210.82" y2="101.6" width="0.1524" layer="91"/>
+<label x="213.36" y="101.6" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$16" class="0">
