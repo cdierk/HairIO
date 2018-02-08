@@ -43,6 +43,9 @@
 
 #define drive 2 // drive circuit
 
+// which pin is connected to the capacitive touch circuit
+#define capTouchPin 5
+
 #define N 160  //How many frequencies
 
 // Create the bluefruit object in software serial
@@ -79,6 +82,9 @@ void setGestureThresholds() {
 
 void setup()
 { 
+  Serial.begin(9600);
+  Serial.println("touch_sensing_bluefruit_v2 edited February 7th, 2018");
+  
   setGestureThresholds();
 
   TCCR1A = 0b10000010;      //-Set up frequency generator
@@ -185,7 +191,7 @@ void loop()
 {
   for (unsigned int d = 0; d < N; d++)
   {
-    int v = analogRead(0);  //-Read response signal
+    int v = analogRead(capTouchPin);  //-Read response signal
     CLR(TCCR1B, 0);         //-Stop generator
     TCNT1 = 0;              //-Reload new frequency
     ICR1 = d;               // |
