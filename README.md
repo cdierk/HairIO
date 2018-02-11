@@ -2,7 +2,7 @@
 Shared Repository for HairIO: Human Hair as interactive Material
 
 # Hardware details
-- Microcontroller: Arduino Nano.
+- Microcontroller: Arduino Nano, ordered from AliExpress. Requires [these drivers.](https://github.com/MPParsley/ch340g-ch34g-ch34x-mac-os-x-driver/)
 - 
 
 # Circuit diagram for SFCS from Disney's Touche project, as shared by Illutron
