@@ -44,7 +44,7 @@
 #define drive 2 // drive circuit
 
 // which pin is connected to the capacitive touch circuit
-#define capTouchPin 5
+#define capTouchPin 3
 
 #define N 160  //How many frequencies
 
