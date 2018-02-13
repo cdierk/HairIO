@@ -48,6 +48,13 @@
 
 #define N 160  //How many frequencies
 
+//mux
+#define muxApin 6
+#define muxBpin 5
+int previousMillis = 0;
+int switchInterval = 5000;
+int currentBraid = 0;
+
 // Create the bluefruit object in software serial
 
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
@@ -94,6 +101,8 @@ void setup()
 
   pinMode(9, OUTPUT);       //-Signal generator pin
   pinMode(8, OUTPUT);       //-Sync (test) pin
+  pinMode(muxApin, OUTPUT);
+  pinMode(muxBpin, OUTPUT);
   pinMode(drive, OUTPUT);
 
   // initialize results array to all zeros
@@ -114,6 +123,10 @@ void setup()
   // Set module to DATA mode
   //Serial.println( F("Switching to DATA mode!") );
   ble.setMode(BLUEFRUIT_MODE_DATA);
+
+  // mux, right now this is trivial, we are only dealing with one braid
+  digitalWrite(muxApin, 0);
+  digitalWrite(muxBpin, 0);
 }
 
 
