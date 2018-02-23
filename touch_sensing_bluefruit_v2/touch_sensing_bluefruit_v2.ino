@@ -5,9 +5,6 @@
 //
 //Added Bluetooth code adapted from Adafruit nRF51822 Bluefruit source code
 //****************************************************************************************
-
-
-
 //****************************************************************************************
 // Illutron take on Disney style capacitive touch sensor using only passives and Arduino
 // Dzl 2012
@@ -36,39 +33,69 @@
 #include "Adafruit_BluefruitLE_UART.h"
 #include "BluefruitConfig.h"
 
+
+/**
+ * capacitive touch definitions
+ */
 #define SET(x,y) (x |=(1<<y))        //-Bit set/clear macros
 #define CLR(x,y) (x &= (~(1<<y)))           // |
 #define CHK(x,y) (x & (1<<y))               // |
 #define TOG(x,y) (x^=(1<<y))                //-+
-
-#define drive 2 // drive circuit
-
-// which pin is connected to the capacitive touch circuit
-#define capTouchPin 3
-
 #define N 160  //How many frequencies
 
-//mux
+/**
+ * hardware pins
+ */
 #define muxApin 6
 #define muxBpin 5
-int previousMillis = 0;
-int switchInterval = 5000;
-int currentBraid = 0;
+#define driveSignalPin 2 // drive circuit signal pin
+#define voltageMonitorPin A4 //analog pin for monitoring the drive battery
 
-// Create the bluefruit object in software serial
+/**
+ * thermistor specific constants
+ */
+#define THERMISTORNOMINAL 10000 //resistance at 25 degrees C
+#define TEMPERATURENOMINAL 25 // temperature for nominal resistance
+#define NUMSAMPLES 5 //how many samples to take before averaging the temperature
+#define BCOEFFICIENT 3950 //beta coefficient of the thermistory
+#define SERIESRESISTOR 10000 //value of 'other' resistor
+#define TEMPTHRESHOLD 28.0
 
+/**
+ * pins specific to a particular braid
+ * are stored in a braidx object
+ */
+struct braidx {
+  int muxPin;
+  int thermPin;
+  int capTouchPin;
+};
+
+/**
+ * hardware has two braid channels
+ * TODO double check the pins
+ */
+struct braidx braid0 = {muxApin, A0, 5};
+struct braidx braid1 = {muxBpin, A1, 6};
+struct braidx currentBraid = braid0;
+
+/**
+ * Bluetooth setup
+ * Create the bluefruit object in software serial
+ */
 SoftwareSerial bluefruitSS = SoftwareSerial(BLUEFRUIT_SWUART_TXD_PIN, BLUEFRUIT_SWUART_RXD_PIN);
 
 Adafruit_BluefruitLE_UART ble(bluefruitSS, BLUEFRUIT_UART_MODE_PIN,
                       BLUEFRUIT_UART_CTS_PIN, BLUEFRUIT_UART_RTS_PIN);
 
+
+/**
+ * Gesture sensing and processing variables
+ */
 //Gesture sensing variables
 int results[N];            //-Filtered result buffer
 int freq[N];            //-Filtered result buffer
 int sizeOfArray = N;
-
-//so that we don't send "braid touched" while drive circuit is running
-bool driving = false; 
 
 //Gesture processing variables
 float gesturePoints[2][2];
@@ -78,19 +105,17 @@ String names[2] = {"nothing", "touch"};
 char curGesture = 0;
 char lastGesture = 0;
 
-void setGestureThresholds() {
-  gesturePoints[0][0] = 34;
-  gesturePoints[0][1] = 390;
+//so that we don't send "braid touched" while drive circuit is running
+bool driving = false; 
 
-  gesturePoints[1][0] = 50;
-  gesturePoints[1][1] = 300;
-}
-
+/****************************************
+ * End of variable set up
+ ****************************************/
 
 void setup()
 { 
   Serial.begin(9600);
-  Serial.println("touch_sensing_bluefruit_v2 edited February 7th, 2018");
+  Serial.println("touch_sensing_bluefruit_v2 edited February 22th, 2018");
   
   setGestureThresholds();
 
@@ -103,7 +128,7 @@ void setup()
   pinMode(8, OUTPUT);       //-Sync (test) pin
   pinMode(muxApin, OUTPUT);
   pinMode(muxBpin, OUTPUT);
-  pinMode(drive, OUTPUT);
+  pinMode(driveSignalPin, OUTPUT);
 
   // initialize results array to all zeros
   memset(results,0,sizeof(results));
@@ -130,6 +155,14 @@ void setup()
 }
 
 
+
+void setGestureThresholds() {
+  gesturePoints[0][0] = 34;
+  gesturePoints[0][1] = 390;
+
+  gesturePoints[1][0] = 50;
+  gesturePoints[1][1] = 300;
+}
 
 
 void processGesture() {
@@ -200,11 +233,60 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
   curGesture = type;
 }
 
+
+// read temp and write to serial monitor
+// return temp
+int readThermistor() {
+    uint8_t i;
+    float average;
+    uint16_t samples[NUMSAMPLES];
+
+    //take N samples in a row, with a slight delay
+  
+    for (i = 0; i < NUMSAMPLES; i++) {
+      samples[i] = analogRead(currentBraid.thermPin); //doesn't matter right now, but we need this to correspond to the right braid
+      delay(10);
+    }
+  
+    // average all the samples out
+    average = 0;
+    for (i = 0; i < NUMSAMPLES; i++) {
+      average += samples[i];
+    }
+    average /= NUMSAMPLES;
+  
+    //convert these values to resistance
+    average = 1023 / average - 1;
+    average = SERIESRESISTOR / average;
+  
+    //convert these values to temperature
+    average = average / THERMISTORNOMINAL;
+    average = log(average);
+    average /= BCOEFFICIENT;
+    average += 1.0 / (TEMPERATURENOMINAL + 273.15);
+    average = 1.0 / average;
+    average -= 273.15;
+  
+    //average is now the temperature of the thermistor
+    Serial.println(average);
+  
+    return average;
+}
+
+//If the temperature is above the threshold,
+//turn off driving
+void thermistorThrottle() {
+    int average = readThermistor();
+    if (average >= TEMPTHRESHOLD) {
+        digitalWrite(driveSignalPin, LOW);
+        driving = false;
+    }
+}
 void loop()
 {
   for (unsigned int d = 0; d < N; d++)
   {
-    int v = analogRead(capTouchPin);  //-Read response signal
+    int v = analogRead(currentBraid.capTouchPin);  //-Read response signal
     CLR(TCCR1B, 0);         //-Stop generator
     TCNT1 = 0;              //-Reload new frequency
     ICR1 = d;               // |
@@ -239,11 +321,15 @@ void loop()
     //Serial.println((char)c);
     //Serial.println(received);
     if (received.equals("!B10;")){
-      digitalWrite(drive,HIGH);
+      digitalWrite(driveSignalPin,HIGH);
       driving = true;
     } else if (received.equals("!B219")){
-      digitalWrite(drive,LOW);
+      digitalWrite(driveSignalPin,LOW);
       driving = false;
+    }
+    //read out the temperature and write to serial monitor
+    if (driving) {
+      readThermistor();
     }
   }
 
