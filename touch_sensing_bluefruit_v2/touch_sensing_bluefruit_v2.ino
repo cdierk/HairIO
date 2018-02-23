@@ -125,7 +125,7 @@ void setup()
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
   // mux, right now this is trivial, we are only dealing with one braid
-  digitalWrite(muxApin, 0);
+  digitalWrite(muxApin, 1);
   digitalWrite(muxBpin, 0);
 }
 
