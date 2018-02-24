@@ -1,3 +1,11 @@
+/**
+ * Demo code for bluetooth enabled PCB
+ * ***********************************
+ * Uses Bluefruit app on phone to receive captouch signals and toggle driving
+ * Monitors temperature via thermistor; includes drive shutoff if temperature threshold exceeded
+ * Monitors battery voltages; warning light and drive shutoff if voltages below threshold
+ */
+
 //****************************************************************************************
 // Adapted from https://github.com/Illutron/AdvancedTouchSensing
 // Moves the gesture analysis from Processing to run entirely on Arduino, with fixed thresholds
@@ -48,6 +56,7 @@
  */
 #define muxApin 6
 #define muxBpin 5
+#define CAPTOUCHPIN A3
 #define driveSignalPin 2 // drive circuit signal pin
 #define voltageMonitorPin A4 //analog pin for monitoring the drive battery
 #define onboardLED 13
@@ -71,20 +80,24 @@
 /**
  * pins specific to a particular braid
  * are stored in a braidx object
+ * the channel on the mux is set by the state of the
+ * A and B select channels; the relevant states are saved 
+ * in the braid object.
+ * ch0 = A0B0
+ * ch1 = A1B0
  */
 struct braidx {
-  int muxPin;
+  int muxSelectA;
+  int muxSelectB;
   int thermPin;
-  int capTouchPin;
 };
 
 /**
  * hardware has two braid channels
- * TODO double check the pins
- */
-struct braidx braid0 = {muxApin, A0, 5};
-struct braidx braid1 = {muxBpin, A1, 6};
-struct braidx currentBraid = braid0;
+ */ 
+struct braidx braid0 = {0, 0, A0}; //left
+struct braidx braid1 = {1, 0, A1}; //right
+struct braidx currentBraid = braid1;
 
 /**
  * Bluetooth setup
@@ -157,11 +170,10 @@ void setup()
   //Serial.println( F("Switching to DATA mode!") );
   ble.setMode(BLUEFRUIT_MODE_DATA);
 
-  // mux, right now this is trivial, we are only dealing with one braid
-  digitalWrite(muxApin, 1);
-  digitalWrite(muxBpin, 0);
+  //set mux pins according to braid's channel select parameters
+  digitalWrite(muxApin, currentBraid.muxSelectA);
+  digitalWrite(muxBpin, currentBraid.muxSelectB);
 }
-
 
 
 void setGestureThresholds() {
@@ -292,7 +304,7 @@ void thermistorThrottle(float temp) {
 void capacitiveSweep() {
   for (unsigned int d = 0; d < N; d++)
   {
-    int v = analogRead(currentBraid.capTouchPin);  //-Read response signal
+    int v = analogRead(CAPTOUCHPIN);  //-Read response signal
     CLR(TCCR1B, 0);         //-Stop generator
     TCNT1 = 0;              //-Reload new frequency
     ICR1 = d;               // |
@@ -344,15 +356,20 @@ long readVcc() {
  * TODO: need a way to distinguish which one is low
  */
 void monitorBatteries() {
-  float driveVoltage = analogRead(voltageMonitorPin);
-  if (driveVoltage < SAFE_DRIVE_VOLTAGE_THRESHOLD) {
-      turnOffDrive();
-      digitalWrite(onboardLED, HIGH);
-  }
+  int driveSensorValue = analogRead(voltageMonitorPin);
+  float driveVoltage= driveSensorValue * (3.7 / 1023.0);
+
+  Serial.println(driveVoltage);
+//  if (driveVoltage < SAFE_DRIVE_VOLTAGE_THRESHOLD) {
+//      turnOffDrive();
+//      digitalWrite(onboardLED, HIGH);
+//  }
   long controlVoltageMillivolts = readVcc();
-  if (controlVoltageMillivolts < SAFE_CONTROL_VOLTAGE_THRESHOLD*1000) {
-      digitalWrite(onboardLED, HIGH);
-  }
+  float controlVoltage = controlVoltageMillivolts/1000.0;
+  Serial.println(controlVoltage);
+//  if (controlVoltage < SAFE_CONTROL_VOLTAGE_THRESHOLD) {
+//      digitalWrite(onboardLED, HIGH);
+//  }
 }
 
 void turnOnDrive() {
@@ -391,11 +408,12 @@ void loop()
     } else if (received.equals("!B219")){ //turn the hair drive off
         turnOffDrive();
     }
+    
     //read out the temperature and write to serial monitor
-    if (driving) {
-      float temp = readThermistor();
-      //thermistorThrottle(temp); //turn it off if temp is too high
-    }
+  }
+  if (driving) {
+    float temp = readThermistor();
+    thermistorThrottle(temp); //turn it off if temp is too high
   }
 
   monitorBatteries();
