@@ -196,6 +196,14 @@ void processGesture() {
   }
 }
 
+void sendBLEMessage(String msg) {
+  uint8_t sendbuffer[20];
+  msg.getBytes(sendbuffer, 20);
+  char sendbuffersize = min(20, msg.length());
+
+  ble.write(sendbuffer, sendbuffersize);
+}
+
 //adapted from http://forum.arduino.cc/index.php?topic=41999.0
 int getMaxFromArray(int* array, int size) {
   int max = array[0];
@@ -296,9 +304,9 @@ int readThermistor() {
 //If the temperature is above the threshold,
 //turn off driving
 void thermistorThrottle(float temp) {
-    if (temp >= TEMPTHRESHOLD) {
-        turnOffDrive();
-    }
+//    if (temp >= TEMPTHRESHOLD) {
+//        turnOffDrive();
+//    }
 }
 
 void capacitiveSweep() {
@@ -375,24 +383,28 @@ void monitorBatteries() {
 void turnOnDrive() {
    digitalWrite(driveSignalPin, HIGH);
    driving = true;
+   Serial.println("Driving...");
+   sendBLEMessage("Driving.............................................");
 }
 
 void turnOffDrive() {
    digitalWrite(driveSignalPin, LOW);
    driving = false;
+   Serial.println("Not driving...");
+   sendBLEMessage("Not driving.........................................");
 }
 
 void loop()
 {
   //update the captouch state
-  capacitiveSweep();
+  //capacitiveSweep();
   
   //this would send the data to processing
   //PlottArray(1,freq,results);
 
   // instead of sending to processing, do the work here
-  analyzeInput(freq, results);
-  processGesture();
+  //analyzeInput(freq, results);
+  //processGesture();
 
   String received = "";
   
