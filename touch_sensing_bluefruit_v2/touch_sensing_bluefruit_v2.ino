@@ -193,6 +193,7 @@ void processGesture() {
     char sendbuffersize = min(20, s.length());
 
     ble.write(sendbuffer, sendbuffersize);
+    Serial.println(s);
   }
 }
 
@@ -304,9 +305,9 @@ int readThermistor() {
 //If the temperature is above the threshold,
 //turn off driving
 void thermistorThrottle(float temp) {
-//    if (temp >= TEMPTHRESHOLD) {
-//        turnOffDrive();
-//    }
+    if (temp >= TEMPTHRESHOLD) {
+        turnOffDrive();
+    }
 }
 
 void capacitiveSweep() {
@@ -397,14 +398,14 @@ void turnOffDrive() {
 void loop()
 {
   //update the captouch state
-  //capacitiveSweep();
+  capacitiveSweep();
   
   //this would send the data to processing
-  //PlottArray(1,freq,results);
+//  PlottArray(1,freq,results);
 
   // instead of sending to processing, do the work here
-  //analyzeInput(freq, results);
-  //processGesture();
+  analyzeInput(freq, results);
+  processGesture();
 
   String received = "";
   
@@ -414,7 +415,7 @@ void loop()
     int c = ble.read();
     received = received + (char) c;
     //Serial.println((char)c);
-    //Serial.println(received);
+    Serial.println(received);
     if (received.equals("!B10;")){      //turn the hair drive on
         turnOnDrive();
     } else if (received.equals("!B219")){ //turn the hair drive off
@@ -423,12 +424,12 @@ void loop()
     
     //read out the temperature and write to serial monitor
   }
-  if (driving) {
-    float temp = readThermistor();
-    thermistorThrottle(temp); //turn it off if temp is too high
-  }
+//  if (driving) {
+//    float temp = readThermistor();
+////    thermistorThrottle(temp); //turn it off if temp is too high
+//  }
 
-  monitorBatteries();
+//  monitorBatteries();
 
   TOG(PORTB, 0);           //-Toggle pin 8 after each sweep (good for scope)
 }
