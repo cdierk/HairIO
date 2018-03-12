@@ -92,6 +92,7 @@ struct braidx {
   int muxSelectB;
   int thermPin;
   String name_message;
+  float gesturePoints[2][2];
 };
 
 struct index_val {
@@ -102,8 +103,8 @@ struct index_val {
 /**
  * hardware has two braid channels
  */ 
-struct braidx braid0 = {0, 0, A0, "Braid 0"}; //left
-struct braidx braid1 = {1, 0, A1, "Braid 1"}; //right
+struct braidx braid0 = {0, 0, A0, "Braid 0", { {0,0}, {0,0} } }; //left
+struct braidx braid1 = {1, 0, A1, "Braid 1", { {0,0}, {0,0} } }; //right
 struct braidx currentBraid = braid0;
 
 /**
@@ -125,7 +126,6 @@ int freq[N];            //-Filtered result buffer
 int sizeOfArray = N;
 
 //Gesture processing variables
-float gesturePoints[2][2];
 int gestureDist[2];
 String names[2] = {"nothing", "touch"};
 
@@ -183,30 +183,46 @@ void setup()
 }
 
 void setGestureThresholds() {
-  //no touch? 
 //  gesturePoints[0][0] = 34;   //x coord
 //  gesturePoints[0][1] = 390;  //y coord
-
-  gesturePoints[0][0] = (unsigned int) EEPROM.read(0) + ((unsigned int) EEPROM.read(1) << 8);   //x coord
-  gesturePoints[0][1] = (unsigned int) EEPROM.read(2) + ((unsigned int) EEPROM.read(3) << 8);  //y coord
-  Serial.println(gesturePoints[0][0]);
-  Serial.println(gesturePoints[0][1]);
-
-  //touch?
-   gesturePoints[1][0] = (unsigned int) EEPROM.read(4) + ((unsigned int) EEPROM.read(5) << 8);  //x coord
-   gesturePoints[1][1] = (unsigned int) EEPROM.read(6) + ((unsigned int) EEPROM.read(7) << 8);  //y coord
-
-  Serial.println(gesturePoints[1][0]);
-  Serial.println(gesturePoints[1][1]);
-
 //  gesturePoints[1][0] = 50;   //x coord
 //  gesturePoints[1][1] = 300;  //y coord
+
+
+  //no touch
+  braid0.gesturePoints[0][0] = (unsigned int) EEPROM.read(0) + ((unsigned int) EEPROM.read(1) << 8);   //x coord
+  braid0.gesturePoints[0][1] = (unsigned int) EEPROM.read(2) + ((unsigned int) EEPROM.read(3) << 8);  //y coord
+  
+  //touch
+   braid0.gesturePoints[1][0] = (unsigned int) EEPROM.read(4) + ((unsigned int) EEPROM.read(5) << 8);  //x coord
+   braid0.gesturePoints[1][1] = (unsigned int) EEPROM.read(6) + ((unsigned int) EEPROM.read(7) << 8);  //y coord
+  Serial.println("Braid0 No Touch");
+  Serial.println(braid0.gesturePoints[0][0]);
+  Serial.println(braid0.gesturePoints[0][1]);
+  Serial.println("Braid0 Touch");
+  Serial.println(braid0.gesturePoints[1][0]);
+  Serial.println(braid0.gesturePoints[1][1]);
+
+  //no touch
+  braid1.gesturePoints[0][0] = (unsigned int) EEPROM.read(8) + ((unsigned int) EEPROM.read(9) << 8);   //x coord
+  braid1.gesturePoints[0][1] = (unsigned int) EEPROM.read(10) + ((unsigned int) EEPROM.read(11) << 8);  //y coord
+  
+  //touch
+   braid1.gesturePoints[1][0] = (unsigned int) EEPROM.read(12) + ((unsigned int) EEPROM.read(13) << 8);  //x coord
+   braid1.gesturePoints[1][1] = (unsigned int) EEPROM.read(14) + ((unsigned int) EEPROM.read(15) << 8);  //y coord
+  Serial.println("Braid1 No Touch");
+  Serial.println(braid1.gesturePoints[0][0]);
+  Serial.println(braid1.gesturePoints[0][1]);
+  Serial.println("Braid1 Touch");
+  Serial.println(braid1.gesturePoints[1][0]);
+  Serial.println(braid1.gesturePoints[1][1]);
+
+
 }
 
 
 void processGesture() {
   if ((curGesture == 1) & (driving == false)){
-//    String s = currentBraid.name_message + " touched                                       ";
     String s = " touched";
     uint8_t sendbuffer[20];
     s.getBytes(sendbuffer, 20);
@@ -272,8 +288,10 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
   for (int i = 0; i < 2; i++)
   {
     //calculate individual dist
-    //TODO should the timeArr be replaced by the index of voltageArr max? 
-    gestureDist[i] = dist(getMaxFromArray(timeArr, N).val, getMaxFromArray(voltageArr, N).val, gesturePoints[i][0], gesturePoints[i][1]);
+    struct index_val iv = getMaxFromArray(voltageArr, N);
+    gestureDist[i] = dist(iv.index, iv.val, currentBraid.gesturePoints[i][0], currentBraid.gesturePoints[i][1]);
+    //unclear if version of dist above is right or version below....
+//    gestureDist[i] = dist(getMaxFromArray(timeArr, N).val, getMaxFromArray(voltageArr, N).val, gesturePoints[i][0], gesturePoints[i][1]);
     if (gestureDist[i] < currentMaxValue || i == 0)
     {
       currentMax = i;
@@ -434,12 +452,15 @@ void do_captouch(){
 }
 
 void calibrate_captouch() {  
+
+  reset_mux(braid0);
+  sendBLEMessage("\n\n\n");
   sendBLEMessage("Ready to calibrate");
-  sendBLEMessage(": touch braid");
+  sendBLEMessage(": touch braid 0 ");
   delay(2000); //time to read instructions
   sendBLEMessage("\n\n\n");
   sendBLEMessage("Calibrating....");
-  sendBLEMessage("please hold braid");
+  sendBLEMessage("please hold braid 0 ");
   sendBLEMessage(" for 5 seconds...");
   delay(2500); //time to obey instructions
   capacitiveSweep();
@@ -487,6 +508,66 @@ void calibrate_captouch() {
   Serial.println(xcoord);
   Serial.println(ycoord);
 
+
+  /*
+   * Now calibrate the other braid 
+   */
+
+  reset_mux(braid1);
+
+  sendBLEMessage("Ready to calibrate");
+  sendBLEMessage(": touch braid 1 ");
+  delay(2000); //time to read instructions
+  sendBLEMessage("\n\n\n");
+  sendBLEMessage("Calibrating....");
+  sendBLEMessage("please hold braid 1 ");
+  sendBLEMessage(" for 5 seconds...");
+  delay(2500); //time to obey instructions
+  capacitiveSweep();
+  iv = getMaxFromArray(results, N);
+  ycoord = iv.val;
+  ylow = ycoord;
+  yhigh = ycoord >>8;
+  xcoord = iv.index;
+  xlow = xcoord;
+  xhigh = xcoord >>8;
+  
+  //store to eeprom
+  EEPROM.write(12, xlow); //touch
+  EEPROM.write(13, xhigh); 
+
+  EEPROM.write(14, ylow); //touch
+  EEPROM.write(15, yhigh);
+  Serial.println("Touch");
+  Serial.println(xcoord);
+  Serial.println(ycoord);
+
+  delay(2500);
+  sendBLEMessage("\n\n\n");
+  sendBLEMessage("Release braid...");
+  sendBLEMessage("for 5 seconds");
+  sendBLEMessage(" without ");
+  sendBLEMessage("touching....");
+
+  delay(2500);
+  capacitiveSweep();
+  iv = getMaxFromArray(results, N);
+  ycoord = iv.val;
+  xcoord = iv.index;
+  ylow = ycoord;
+  yhigh = ycoord >>8;
+  xlow = xcoord;
+  xhigh = xcoord >>8;
+  EEPROM.write(8, xlow); //no touch
+  EEPROM.write(9, xhigh); 
+
+  EEPROM.write(10, ylow); //no touch
+  EEPROM.write(11, yhigh);
+  
+  Serial.println("No Touch");
+  Serial.println(xcoord);
+  Serial.println(ycoord);
+
   setGestureThresholds();
   
   delay(2500);
@@ -527,7 +608,7 @@ void loop()
   {
     int c = ble.read();
     received = received + (char) c;
-    Serial.println(received);
+//    Serial.println(received);
     if (received.equals("!B10;")){        
         reset_mux(braid1);
         turnOffDrive();   //ensure 1 is off
