@@ -187,12 +187,17 @@ void setGestureThresholds() {
 //  gesturePoints[0][0] = 34;   //x coord
 //  gesturePoints[0][1] = 390;  //y coord
 
-  gesturePoints[0][0] = EEPROM.read(0);   //x coord
-  gesturePoints[0][1] = EEPROM.read(1);  //y coord
+  gesturePoints[0][0] = (unsigned int) EEPROM.read(0) + ((unsigned int) EEPROM.read(1) << 8);   //x coord
+  gesturePoints[0][1] = (unsigned int) EEPROM.read(2) + ((unsigned int) EEPROM.read(3) << 8);  //y coord
+  Serial.println(gesturePoints[0][0]);
+  Serial.println(gesturePoints[0][1]);
 
   //touch?
-   gesturePoints[0][0] = EEPROM.read(2);   //x coord
-   gesturePoints[0][1] = EEPROM.read(3);  //y coord
+   gesturePoints[1][0] = (unsigned int) EEPROM.read(4) + ((unsigned int) EEPROM.read(5) << 8);  //x coord
+   gesturePoints[1][1] = (unsigned int) EEPROM.read(6) + ((unsigned int) EEPROM.read(7) << 8);  //y coord
+
+  Serial.println(gesturePoints[1][0]);
+  Serial.println(gesturePoints[1][1]);
 
 //  gesturePoints[1][0] = 50;   //x coord
 //  gesturePoints[1][1] = 300;  //y coord
@@ -201,7 +206,8 @@ void setGestureThresholds() {
 
 void processGesture() {
   if ((curGesture == 1) & (driving == false)){
-    String s = currentBraid.name_message + " touched                                       ";
+//    String s = currentBraid.name_message + " touched                                       ";
+    String s = " touched";
     uint8_t sendbuffer[20];
     s.getBytes(sendbuffer, 20);
     char sendbuffersize = min(20, s.length());
@@ -274,7 +280,8 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
       currentMaxValue =  gestureDist[i];
     }
   }
-  
+
+  Serial.println(currentMaxValue);
   int type = currentMax;
   lastGesture = curGesture;
   curGesture = type;
@@ -315,7 +322,7 @@ int readThermistor() {
     average -= 273.15;
   
     //average is now the temperature of the thermistor
-    Serial.println(average);
+//    Serial.println(average);
   
     return average;
 }
@@ -386,14 +393,14 @@ void monitorBatteries() {
   int driveSensorValue = analogRead(voltageMonitorPin);
   float driveVoltage= driveSensorValue * (3.7 / 1023.0);
 
-  Serial.println(driveVoltage);
+//  Serial.println(driveVoltage);
 //  if (driveVoltage < SAFE_DRIVE_VOLTAGE_THRESHOLD) {
 //      turnOffDrive();
 //      digitalWrite(onboardLED, HIGH);
 //  }
   long controlVoltageMillivolts = readVcc();
   float controlVoltage = controlVoltageMillivolts/1000.0;
-  Serial.println(controlVoltage);
+//  Serial.println(controlVoltage);
 //  if (controlVoltage < SAFE_CONTROL_VOLTAGE_THRESHOLD) {
 //      digitalWrite(onboardLED, HIGH);
 //  }
@@ -426,32 +433,65 @@ void do_captouch(){
 
 }
 
-
 void calibrate_captouch() {  
-  //TOOD: bluetooth write: "Prepare to calibrate; please touch the braid."
+  sendBLEMessage("Ready to calibrate");
+  sendBLEMessage(": touch braid");
   delay(2000); //time to read instructions
-  //TODO: send "Calibrating....please hold braid for 5 seconds..." 
+  sendBLEMessage("\n\n\n");
+  sendBLEMessage("Calibrating....");
+  sendBLEMessage("please hold braid");
+  sendBLEMessage(" for 5 seconds...");
   delay(2500); //time to obey instructions
   capacitiveSweep();
   struct index_val iv = getMaxFromArray(results, N);
   int ycoord = iv.val;
+  byte ylow = ycoord;
+  byte yhigh = ycoord >>8;
   int xcoord = iv.index;
+  byte xlow = xcoord;
+  byte xhigh = xcoord >>8;
+  
   //store to eeprom
-  EEPROM.write(2, xcoord); //touch
-  EEPROM.write(3, ycoord);
+  EEPROM.write(4, xlow); //touch
+  EEPROM.write(5, xhigh); 
+
+  EEPROM.write(6, ylow); //touch
+  EEPROM.write(7, yhigh);
+  Serial.println("Touch");
+  Serial.println(xcoord);
+  Serial.println(ycoord);
 
   delay(2500);
-  //TODO Send: "Release braid....wait for 5 seconds without touching...."
+  sendBLEMessage("\n\n\n");
+  sendBLEMessage("Release braid...");
+  sendBLEMessage("for 5 seconds");
+  sendBLEMessage(" without ");
+  sendBLEMessage("touching....");
+
+  delay(2500);
   capacitiveSweep();
   iv = getMaxFromArray(results, N);
   ycoord = iv.val;
   xcoord = iv.index;
-  EEPROM.write(0, xcoord); //notouch
-  EEPROM.write(1, ycoord); 
-  
-  setGestureThresholds();
+  ylow = ycoord;
+  yhigh = ycoord >>8;
+  xlow = xcoord;
+  xhigh = xcoord >>8;
+  EEPROM.write(0, xlow); //no touch
+  EEPROM.write(1, xhigh); 
 
-  //TODO send: "Calibration complete."
+  EEPROM.write(2, ylow); //no touch
+  EEPROM.write(3, yhigh);
+  
+  Serial.println("No Touch");
+  Serial.println(xcoord);
+  Serial.println(ycoord);
+
+  setGestureThresholds();
+  
+  delay(2500);
+  sendBLEMessage("\n\n\n");
+  sendBLEMessage("Calibration done");
 }
 
 
@@ -482,6 +522,7 @@ void loop()
   String received = "";
   
   // Check to see if received toggle from Phone
+  //https://learn.adafruit.com/bluefruit-le-connect-for-ios/controller
   while ( ble.available() )
   {
     int c = ble.read();
@@ -492,17 +533,17 @@ void loop()
         turnOffDrive();   //ensure 1 is off
         reset_mux(braid0);
         turnOnDrive();    //turn the hair0 drive on
-    } else if (received.equals("!B219")){
+    } else if (received.equals("!B20")){
         reset_mux(braid0);
         turnOffDrive();  //ensure 0 is off
         reset_mux(braid1);
         turnOnDrive();   //turn the hair1 drive on
-    } else if (received.equals("NUMBER3") || received.equals("NUMBER4") ){ //TODO set these right; turn all drive off
+    } else if (received.equals("!B30") || received.equals("!B40") ){ //turn all drive off
         reset_mux(braid0);
         turnOffDrive();
         reset_mux(braid1);
         turnOffDrive();
-    } else if (received.equals("CALIBRATE")) {  //TODO MAKE THIS RIGHT
+    } else if (received.equals("c")) { // send via the UART control panel
        calibrate_captouch();
     }
   }
