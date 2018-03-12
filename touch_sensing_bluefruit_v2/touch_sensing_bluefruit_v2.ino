@@ -11,7 +11,7 @@
 // Moves the gesture analysis from Processing to run entirely on Arduino, with fixed thresholds
 // July 21 2017
 //
-//Added Bluetooth code adapted from Adafruit nRF51822 Bluefruit source code
+//Added Bluetooth code adapted from Adafruit nRF51822 Bluefruit  source code
 //****************************************************************************************
 //****************************************************************************************
 // Illutron take on Disney style capacitive touch sensor using only passives and Arduino
@@ -40,6 +40,7 @@
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_UART.h"
 #include "BluefruitConfig.h"
+#include <EEPROM.h>
 
 
 /**
@@ -90,14 +91,20 @@ struct braidx {
   int muxSelectA;
   int muxSelectB;
   int thermPin;
+  String name_message;
+};
+
+struct index_val {
+  int index;
+  int val;
 };
 
 /**
  * hardware has two braid channels
  */ 
-struct braidx braid0 = {0, 0, A0}; //left
-struct braidx braid1 = {1, 0, A1}; //right
-struct braidx currentBraid = braid1;
+struct braidx braid0 = {0, 0, A0, "Braid 0"}; //left
+struct braidx braid1 = {1, 0, A1, "Braid 1"}; //right
+struct braidx currentBraid = braid0;
 
 /**
  * Bluetooth setup
@@ -175,19 +182,26 @@ void setup()
   digitalWrite(muxBpin, currentBraid.muxSelectB);
 }
 
-
 void setGestureThresholds() {
-  gesturePoints[0][0] = 34;
-  gesturePoints[0][1] = 390;
+  //no touch? 
+//  gesturePoints[0][0] = 34;   //x coord
+//  gesturePoints[0][1] = 390;  //y coord
 
-  gesturePoints[1][0] = 50;
-  gesturePoints[1][1] = 300;
+  gesturePoints[0][0] = EEPROM.read(0);   //x coord
+  gesturePoints[0][1] = EEPROM.read(1);  //y coord
+
+  //touch?
+   gesturePoints[0][0] = EEPROM.read(2);   //x coord
+   gesturePoints[0][1] = EEPROM.read(3);  //y coord
+
+//  gesturePoints[1][0] = 50;   //x coord
+//  gesturePoints[1][1] = 300;  //y coord
 }
 
 
 void processGesture() {
   if ((curGesture == 1) & (driving == false)){
-    String s = F("braid touched                                       ");
+    String s = currentBraid.name_message + " touched                                       ";
     uint8_t sendbuffer[20];
     s.getBytes(sendbuffer, 20);
     char sendbuffersize = min(20, s.length());
@@ -206,14 +220,17 @@ void sendBLEMessage(String msg) {
 }
 
 //adapted from http://forum.arduino.cc/index.php?topic=41999.0
-int getMaxFromArray(int* array, int size) {
+struct index_val getMaxFromArray(int* array, int size) {
   int max = array[0];
+  int max_index = 0;
   for (int i = 1; i < size; i++) {
     if (max < array[i]) {
       max = array[i];
+      max_index = i;
     }
   }
-  return max;
+  struct index_val iv = {max_index, max};
+  return iv;
 }
 
 //assumes no negative values for time or voltage
@@ -249,7 +266,8 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
   for (int i = 0; i < 2; i++)
   {
     //calculate individual dist
-    gestureDist[i] = dist(getMaxFromArray(timeArr, N), getMaxFromArray(voltageArr, N), gesturePoints[i][0], gesturePoints[i][1]);
+    //TODO should the timeArr be replaced by the index of voltageArr max? 
+    gestureDist[i] = dist(getMaxFromArray(timeArr, N).val, getMaxFromArray(voltageArr, N).val, gesturePoints[i][0], gesturePoints[i][1]);
     if (gestureDist[i] < currentMaxValue || i == 0)
     {
       currentMax = i;
@@ -384,7 +402,7 @@ void monitorBatteries() {
 void turnOnDrive() {
    digitalWrite(driveSignalPin, HIGH);
    driving = true;
-   Serial.println("Driving...");
+   Serial.println(currentBraid.name_message + "Driving...");
    sendBLEMessage("Driving.............................................");
 }
 
@@ -395,17 +413,71 @@ void turnOffDrive() {
    sendBLEMessage("Not driving.........................................");
 }
 
-void loop()
-{
-  //update the captouch state
+void do_captouch(){
+   //update the captouch state
   capacitiveSweep();
   
   //this would send the data to processing
-//  PlottArray(1,freq,results);
+  //PlottArray(1,freq,results);
 
   // instead of sending to processing, do the work here
   analyzeInput(freq, results);
   processGesture();
+
+}
+
+
+void calibrate_captouch() {  
+  //TOOD: bluetooth write: "Prepare to calibrate; please touch the braid."
+  delay(2000); //time to read instructions
+  //TODO: send "Calibrating....please hold braid for 5 seconds..." 
+  delay(2500); //time to obey instructions
+  capacitiveSweep();
+  struct index_val iv = getMaxFromArray(results, N);
+  int ycoord = iv.val;
+  int xcoord = iv.index;
+  //store to eeprom
+  EEPROM.write(2, xcoord); //touch
+  EEPROM.write(3, ycoord);
+
+  delay(2500);
+  //TODO Send: "Release braid....wait for 5 seconds without touching...."
+  capacitiveSweep();
+  iv = getMaxFromArray(results, N);
+  ycoord = iv.val;
+  xcoord = iv.index;
+  EEPROM.write(0, xcoord); //notouch
+  EEPROM.write(1, ycoord); 
+  
+  setGestureThresholds();
+
+  //TODO send: "Calibration complete."
+}
+
+
+void reset_mux(struct braidx newbraid){
+  currentBraid = newbraid;
+  digitalWrite(muxApin, currentBraid.muxSelectA);
+  digitalWrite(muxBpin, currentBraid.muxSelectB);
+}
+
+
+//listen to both braids during each loop
+//but only if no braid is actuating
+//only allow one actuation at a time
+//if new actuation is pressed, overrride the current state
+// off press if off does nothing
+// can't read captouch unless off
+
+void loop()
+{
+  if (!driving) {
+    reset_mux(braid0);
+    do_captouch();
+  
+    reset_mux(braid1);
+    do_captouch();
+  }
 
   String received = "";
   
@@ -414,22 +486,33 @@ void loop()
   {
     int c = ble.read();
     received = received + (char) c;
-    //Serial.println((char)c);
     Serial.println(received);
-    if (received.equals("!B10;")){      //turn the hair drive on
-        turnOnDrive();
-    } else if (received.equals("!B219")){ //turn the hair drive off
+    if (received.equals("!B10;")){        
+        reset_mux(braid1);
+        turnOffDrive();   //ensure 1 is off
+        reset_mux(braid0);
+        turnOnDrive();    //turn the hair0 drive on
+    } else if (received.equals("!B219")){
+        reset_mux(braid0);
+        turnOffDrive();  //ensure 0 is off
+        reset_mux(braid1);
+        turnOnDrive();   //turn the hair1 drive on
+    } else if (received.equals("NUMBER3") || received.equals("NUMBER4") ){ //TODO set these right; turn all drive off
+        reset_mux(braid0);
         turnOffDrive();
+        reset_mux(braid1);
+        turnOffDrive();
+    } else if (received.equals("CALIBRATE")) {  //TODO MAKE THIS RIGHT
+       calibrate_captouch();
     }
-    
-    //read out the temperature and write to serial monitor
   }
-//  if (driving) {
-//    float temp = readThermistor();
-////    thermistorThrottle(temp); //turn it off if temp is too high
-//  }
+  
+  if (driving) {
+      float temp = readThermistor();
+      thermistorThrottle(temp); //turn it off if temp is too high
+  }
 
-//  monitorBatteries();
+  monitorBatteries();
 
   TOG(PORTB, 0);           //-Toggle pin 8 after each sweep (good for scope)
 }
