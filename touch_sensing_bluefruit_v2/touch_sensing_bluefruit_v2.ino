@@ -2,6 +2,7 @@
  * Demo code for bluetooth enabled PCB
  * ***********************************
  * Uses Bluefruit app on phone to receive captouch signals and toggle driving
+ * Handles two channels of input and output
  * Monitors temperature via thermistor; includes drive shutoff if temperature threshold exceeded
  * Monitors battery voltages; warning light and drive shutoff if voltages below threshold
  */
@@ -521,8 +522,8 @@ void loop()
         turnOffDrive();  //ensure 0 is off
         reset_mux(braid1);
         turnOnDrive();   //turn the hair1 drive on
-    } else if (received.equals("!B30") || received.equals("!B40") ){ //turn all drive off
-        turnOffDrive();
+    } else if (received.equals("!B30") || received.equals("!B40") ){ 
+        turnOffDrive(); //turn all drive off
     } else if (received.equals("c")) { // send via the UART control panel
       sendBLEMessage("\n\n\n");
       sendBLEMessage("Ready to calibrate");
