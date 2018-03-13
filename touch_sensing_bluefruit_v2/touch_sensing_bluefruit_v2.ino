@@ -189,12 +189,12 @@ void setGestureThresholds(struct braidx braid) {
   //original set values:  34x, 390y; 50x; 300y;
 
   //no touch
-  braid.gesturePoints[0][0] = (unsigned int) EEPROM.read(0) + ((unsigned int) EEPROM.read(1) << 8);   //x coord
-  braid.gesturePoints[0][1] = (unsigned int) EEPROM.read(2) + ((unsigned int) EEPROM.read(3) << 8);  //y coord
+  braid.gesturePoints[0][0] = (unsigned int) EEPROM.read(braid.eeprom_start_addr + 0) + ((unsigned int) EEPROM.read(braid.eeprom_start_addr + 1) << 8);   //x coord
+  braid.gesturePoints[0][1] = (unsigned int) EEPROM.read(braid.eeprom_start_addr + 2) + ((unsigned int) EEPROM.read(braid.eeprom_start_addr + 3) << 8);  //y coord
   
   //touch
-   braid.gesturePoints[1][0] = (unsigned int) EEPROM.read(4) + ((unsigned int) EEPROM.read(5) << 8);  //x coord
-   braid.gesturePoints[1][1] = (unsigned int) EEPROM.read(6) + ((unsigned int) EEPROM.read(7) << 8);  //y coord
+   braid.gesturePoints[1][0] = (unsigned int) EEPROM.read(braid.eeprom_start_addr + 4) + ((unsigned int) EEPROM.read(braid.eeprom_start_addr + 5) << 8);  //x coord
+   braid.gesturePoints[1][1] = (unsigned int) EEPROM.read(braid.eeprom_start_addr + 6) + ((unsigned int) EEPROM.read(braid.eeprom_start_addr + 7) << 8);  //y coord
   Serial.println("Braid No Touch");
   Serial.println(braid.gesturePoints[0][0]);
   Serial.println(braid.gesturePoints[0][1]);
@@ -266,26 +266,39 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
   /* ====================================================================
     Gesture compare
     ====================================================================  */
-  int currentMax = 0;
-  int currentMaxValue = -1;
-  for (int i = 0; i < 2; i++)
-  {
-    //calculate individual dist
-    struct index_val iv = getMaxFromArray(voltageArr, N);
-    gestureDist[i] = dist(iv.index, iv.val, currentBraid.gesturePoints[i][0], currentBraid.gesturePoints[i][1]);
-          //unclear if version of dist above is right or version below....
-          // gestureDist[i] = dist(getMaxFromArray(timeArr, N).val, getMaxFromArray(voltageArr, N).val, gesturePoints[i][0], gesturePoints[i][1]);
-    if (gestureDist[i] < currentMaxValue || i == 0)
-    {
-      currentMax = i;
-      currentMaxValue =  gestureDist[i];
-    }
-  }
+//  int currentMax = 0;
+//  int currentMaxValue = -1;
+//  for (int i = 0; i < 2; i++)
+//  {
+//    //calculate individual dist
+//    struct index_val iv = getMaxFromArray(voltageArr, N);
+////    gestureDist[i] = dist(iv.index, iv.val, currentBraid.gesturePoints[i][0], currentBraid.gesturePoints[i][1]);
+//          //unclear if version of dist above is right or version below....
+//    gestureDist[i] = dist(getMaxFromArray(timeArr, N).val, getMaxFromArray(voltageArr, N).val, currentBraid.gesturePoints[i][0], currentBraid.gesturePoints[i][1]);
+//    if (gestureDist[i] < currentMaxValue || i == 0)
+//    {
+//      currentMax = i;
+//      currentMaxValue =  gestureDist[i];
+//    }
+//  }
 
-  Serial.println(currentMaxValue);
-  int type = currentMax;
-  lastGesture = curGesture;
-  curGesture = type;
+  int max_ = getMaxFromArray(voltageArr, N).val;
+  float touch_dist = abs(max_ - currentBraid.gesturePoints[1][0]);
+  float notouch_dist = abs(max_ - currentBraid.gesturePoints[0][0]);
+  if (touch_dist < notouch_dist) {
+    curGesture = 1;
+  } else {
+    curGesture = 0;
+  }
+//  
+  if (currentBraid.name_message == "Braid 0") {
+    Serial.println(max_);
+    Serial.println(touch_dist);
+    Serial.println(currentBraid.gesturePoints[1][0]);
+  }
+//  int type = currentMax;
+//  lastGesture = curGesture;
+//  curGesture = type;
 }
 
 
@@ -538,12 +551,12 @@ void loop()
     }
   }
   
-  if (driving) {
-      float temp = readThermistor();
-      thermistorThrottle(temp); //turn it off if temp is too high
-  }
-
-  monitorBatteries();
+//  if (driving) {
+//      float temp = readThermistor();
+//      thermistorThrottle(temp); //turn it off if temp is too high
+//  }
+//
+//  monitorBatteries();
 
   TOG(PORTB, 0);           //-Toggle pin 8 after each sweep (good for scope)
 }
