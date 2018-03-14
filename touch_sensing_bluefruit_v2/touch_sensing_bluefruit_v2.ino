@@ -426,8 +426,8 @@ void monitorBatteries() {
 void turnOnDrive() {
    digitalWrite(driveSignalPin, HIGH);
    driving = true;
-   Serial.println(currentBraid.name_message + "Driving...");
-   sendBLEMessage("Driving.............................................");
+//   Serial.println(currentBraid.name_message + "Driving...");
+   sendBLEMessage("Driving \n");
 }
 
 void turnOffDrive() {       
@@ -436,8 +436,7 @@ void turnOffDrive() {
    reset_mux(braid1);
    digitalWrite(driveSignalPin, LOW);
    driving = false;
-   Serial.println("Not driving...");
-   sendBLEMessage("Not driving.........................................");
+   sendBLEMessage("Not driving \n");
 }
 
 void do_captouch(){
