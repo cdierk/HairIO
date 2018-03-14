@@ -146,9 +146,6 @@ void setup()
   Serial.begin(9600);
   Serial.println("touch_sensing_bluefruit_v2 edited February 22th, 2018");
   
-  setGestureThresholds(braid0);
-  setGestureThresholds(braid1);
-
   TCCR1A = 0b10000010;      //-Set up frequency generator
   TCCR1B = 0b00011001;      //-+
   ICR1 = 110;
@@ -183,24 +180,27 @@ void setup()
   //set mux pins according to braid's channel select parameters
   digitalWrite(muxApin, currentBraid.muxSelectA);
   digitalWrite(muxBpin, currentBraid.muxSelectB);
+
+  setGestureThresholds(&braid0);
+  setGestureThresholds(&braid1);
 }
 
-void setGestureThresholds(struct braidx braid) {
+void setGestureThresholds(struct braidx * braid) {
   //original set values:  34x, 390y; 50x; 300y;
 
   //no touch
-  braid.gesturePoints[0][0] = (unsigned int) EEPROM.read(braid.eeprom_start_addr + 0) + ((unsigned int) EEPROM.read(braid.eeprom_start_addr + 1) << 8);   //x coord
-  braid.gesturePoints[0][1] = (unsigned int) EEPROM.read(braid.eeprom_start_addr + 2) + ((unsigned int) EEPROM.read(braid.eeprom_start_addr + 3) << 8);  //y coord
+  braid->gesturePoints[0][0] = (unsigned int) EEPROM.read(braid->eeprom_start_addr + 0) + ((unsigned int) EEPROM.read(braid->eeprom_start_addr + 1) << 8);   //x coord
+  braid->gesturePoints[0][1] = (unsigned int) EEPROM.read(braid->eeprom_start_addr + 2) + ((unsigned int) EEPROM.read(braid->eeprom_start_addr + 3) << 8);  //y coord
   
   //touch
-   braid.gesturePoints[1][0] = (unsigned int) EEPROM.read(braid.eeprom_start_addr + 4) + ((unsigned int) EEPROM.read(braid.eeprom_start_addr + 5) << 8);  //x coord
-   braid.gesturePoints[1][1] = (unsigned int) EEPROM.read(braid.eeprom_start_addr + 6) + ((unsigned int) EEPROM.read(braid.eeprom_start_addr + 7) << 8);  //y coord
+   braid->gesturePoints[1][0] = (unsigned int) EEPROM.read(braid->eeprom_start_addr + 4) + ((unsigned int) EEPROM.read(braid->eeprom_start_addr + 5) << 8);  //x coord
+   braid->gesturePoints[1][1] = (unsigned int) EEPROM.read(braid->eeprom_start_addr + 6) + ((unsigned int) EEPROM.read(braid->eeprom_start_addr + 7) << 8);  //y coord
   Serial.println("Braid No Touch");
-  Serial.println(braid.gesturePoints[0][0]);
-  Serial.println(braid.gesturePoints[0][1]);
+  Serial.println(braid->gesturePoints[0][0]);
+  Serial.println(braid->gesturePoints[0][1]);
   Serial.println("Braid Touch");
-  Serial.println(braid.gesturePoints[1][0]);
-  Serial.println(braid.gesturePoints[1][1]);
+  Serial.println(braid->gesturePoints[1][0]);
+  Serial.println(braid->gesturePoints[1][1]);
 }
 
 
@@ -283,18 +283,23 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
 //  }
 
   int max_ = getMaxFromArray(voltageArr, N).val;
-  float touch_dist = abs(max_ - currentBraid.gesturePoints[1][0]);
-  float notouch_dist = abs(max_ - currentBraid.gesturePoints[0][0]);
+  float touch_dist = abs(max_ - currentBraid.gesturePoints[1][1]);
+  float notouch_dist = abs(max_ - currentBraid.gesturePoints[0][1]);
   if (touch_dist < notouch_dist) {
     curGesture = 1;
   } else {
     curGesture = 0;
   }
-//  
+ 
   if (currentBraid.name_message == "Braid 0") {
+    Serial.print("Max: ");
     Serial.println(max_);
+    Serial.println("touch, notouch dist: "); 
     Serial.println(touch_dist);
-    Serial.println(currentBraid.gesturePoints[1][0]);
+    Serial.println(notouch_dist);
+    Serial.println("touch threshold x, notouch trheshold x: "); 
+    Serial.println(currentBraid.gesturePoints[1][1]);
+    Serial.println(currentBraid.gesturePoints[0][1]);
   }
 //  int type = currentMax;
 //  lastGesture = curGesture;
@@ -312,7 +317,7 @@ int readThermistor() {
     //take N samples in a row, with a slight delay
   
     for (i = 0; i < NUMSAMPLES; i++) {
-      samples[i] = analogRead(currentBraid.thermPin); //doesn't matter right now, but we need this to correspond to the right braid
+      samples[i] = analogRead(currentBraid.thermPin);
       delay(10);
     }
   
@@ -448,8 +453,8 @@ void do_captouch(){
 
 }
 
-void calibrate_captouch(struct braidx braid) {  
-  reset_mux(braid);
+void calibrate_captouch(struct braidx * braid) {  
+  reset_mux(*braid);
   
   delay(2000); //time to read instructions
   sendBLEMessage("\n\n\n");
@@ -465,11 +470,11 @@ void calibrate_captouch(struct braidx braid) {
   int xcoord = iv.index;
   
   //store to eeprom
-  EEPROM.write(braid.eeprom_start_addr + 4, xcoord); //touch
-  EEPROM.write(braid.eeprom_start_addr + 5, xcoord >>8); 
+  EEPROM.write(braid->eeprom_start_addr + 4, xcoord); //touch
+  EEPROM.write(braid->eeprom_start_addr + 5, xcoord >>8); 
 
-  EEPROM.write(braid.eeprom_start_addr + 6, ycoord); //touch
-  EEPROM.write(braid.eeprom_start_addr + 7, ycoord >>8);
+  EEPROM.write(braid->eeprom_start_addr + 6, ycoord); //touch
+  EEPROM.write(braid->eeprom_start_addr + 7, ycoord >>8);
 
   delay(2500);
   sendBLEMessage("\n\n\n");
@@ -483,11 +488,11 @@ void calibrate_captouch(struct braidx braid) {
   iv = getMaxFromArray(results, N);
   ycoord = iv.val;
   xcoord = iv.index;
-  EEPROM.write(braid.eeprom_start_addr + 0, xcoord); //no touch
-  EEPROM.write(braid.eeprom_start_addr + 1, xcoord >>8); 
+  EEPROM.write(braid->eeprom_start_addr + 0, xcoord); //no touch
+  EEPROM.write(braid->eeprom_start_addr + 1, xcoord >>8); 
 
-  EEPROM.write(braid.eeprom_start_addr + 2, ycoord); //no touch
-  EEPROM.write(braid.eeprom_start_addr + 3, ycoord >>8);
+  EEPROM.write(braid->eeprom_start_addr + 2, ycoord); //no touch
+  EEPROM.write(braid->eeprom_start_addr + 3, ycoord >>8);
     
   setGestureThresholds(braid);
 
@@ -541,11 +546,11 @@ void loop()
       sendBLEMessage("\n\n\n");
       sendBLEMessage("Ready to calibrate");
       sendBLEMessage(": touch braid 0 ");
-       calibrate_captouch(braid0);
+       calibrate_captouch(&braid0);
       sendBLEMessage("\n\n\n");
       sendBLEMessage("Ready to calibrate");
       sendBLEMessage(": touch braid 1 ");
-       calibrate_captouch(braid1);
+       calibrate_captouch(&braid1);
       sendBLEMessage("\n\n\n");
       sendBLEMessage("Calibration done");
     }
