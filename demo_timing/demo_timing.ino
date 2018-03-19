@@ -27,12 +27,9 @@
 #define driveSignalPin 2 // drive circuit signal pin
 #define onboardLED 13
 
-#define ONTIME 5000
+#define ONTIME 300000
 #define OFFTIME 5000
 
-
-//so that we don't send "braid touched" while drive circuit is running
-bool driving = false; 
 int mux_a_channel = 0;
 
 /****************************************
@@ -53,28 +50,30 @@ void setup()
 
 void turnOnDrive() {
    digitalWrite(driveSignalPin, HIGH);
-   driving = true;
    Serial.println("Driving...");
 }
 
 void turnOffDrive() {
    digitalWrite(driveSignalPin, LOW);
-   driving = false;
    Serial.println("Not driving...");
 }
 
 void loop()
 {
   //switch to other channel
-  mux_a_channel = (mux_a_channel + 1) % 2;
-  digitalWrite(muxApin, mux_a_channel);
-  
+//  mux_a_channel = (mux_a_channel + 1) % 2;
+//  digitalWrite(muxApin, mux_a_channel);
+  digitalWrite(13, LOW);
+  delay(OFFTIME);
+
   turnOnDrive();
   digitalWrite(13, HIGH);
   delay(ONTIME);
   turnOffDrive();
-  digitalWrite(13, LOW);
-  delay(OFFTIME);
+  while(true) {
+    delay(OFFTIME);
+    digitalWrite(13, LOW);
+  }
 }
 
 

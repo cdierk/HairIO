@@ -266,44 +266,44 @@ void analyzeInput(int timeArr[], int voltageArr[]) {
   /* ====================================================================
     Gesture compare
     ====================================================================  */
-//  int currentMax = 0;
-//  int currentMaxValue = -1;
-//  for (int i = 0; i < 2; i++)
-//  {
-//    //calculate individual dist
-//    struct index_val iv = getMaxFromArray(voltageArr, N);
-////    gestureDist[i] = dist(iv.index, iv.val, currentBraid.gesturePoints[i][0], currentBraid.gesturePoints[i][1]);
-//          //unclear if version of dist above is right or version below....
-//    gestureDist[i] = dist(getMaxFromArray(timeArr, N).val, getMaxFromArray(voltageArr, N).val, currentBraid.gesturePoints[i][0], currentBraid.gesturePoints[i][1]);
-//    if (gestureDist[i] < currentMaxValue || i == 0)
-//    {
-//      currentMax = i;
-//      currentMaxValue =  gestureDist[i];
-//    }
-//  }
+  int currentMax = 0;
+  int currentMaxValue = -1;
+  for (int i = 0; i < 2; i++)
+  {
+    //calculate individual dist
+    struct index_val iv = getMaxFromArray(voltageArr, N);
+    gestureDist[i] = dist(iv.index, iv.val, currentBraid.gesturePoints[i][0], currentBraid.gesturePoints[i][1]);
+          //unclear if version of dist above is right or version below....
+          //gestureDist[i] = dist(getMaxFromArray(timeArr, N).val, getMaxFromArray(voltageArr, N).val, currentBraid.gesturePoints[i][0], currentBraid.gesturePoints[i][1]);
+    if (gestureDist[i] < currentMaxValue || i == 0)
+    {
+      currentMax = i;
+      currentMaxValue =  gestureDist[i];
+    }
+  }
 
-  int max_ = getMaxFromArray(voltageArr, N).val;
-  float touch_dist = abs(max_ - currentBraid.gesturePoints[1][1]);
-  float notouch_dist = abs(max_ - currentBraid.gesturePoints[0][1]);
-  if (touch_dist < notouch_dist) {
-    curGesture = 1;
-  } else {
-    curGesture = 0;
-  }
+//  int max_ = getMaxFromArray(voltageArr, N).val;
+//  float touch_dist = abs(max_ - currentBraid.gesturePoints[1][1]);
+//  float notouch_dist = abs(max_ - currentBraid.gesturePoints[0][1]);
+//  if (touch_dist < notouch_dist) {
+//    curGesture = 1;
+//  } else {
+//    curGesture = 0;
+//  }
  
-  if (currentBraid.name_message == "Braid 0") {
-    Serial.print("Max: ");
-    Serial.println(max_);
-    Serial.println("touch, notouch dist: "); 
-    Serial.println(touch_dist);
-    Serial.println(notouch_dist);
-    Serial.println("touch threshold x, notouch trheshold x: "); 
-    Serial.println(currentBraid.gesturePoints[1][1]);
-    Serial.println(currentBraid.gesturePoints[0][1]);
-  }
-//  int type = currentMax;
-//  lastGesture = curGesture;
-//  curGesture = type;
+//  if (currentBraid.name_message == "Braid 0") {
+//    Serial.print("Max: ");
+//    Serial.println(currentMax);
+//    Serial.println("touch, notouch dist: "); 
+//    Serial.println(touch_dist);
+//    Serial.println(notouch_dist);
+//    Serial.println("touch threshold x, notouch trheshold x: "); 
+//    Serial.println(currentBraid.gesturePoints[1][1]);
+//    Serial.println(currentBraid.gesturePoints[0][1]);
+//  }
+  int type = currentMax;
+  lastGesture = curGesture;
+  curGesture = type;
 }
 
 
@@ -444,7 +444,7 @@ void do_captouch(){
   capacitiveSweep();
   
   //this would send the data to processing
-  //PlottArray(1,freq,results);
+//  PlottArray(1,freq,results);
 
   // instead of sending to processing, do the work here
   analyzeInput(freq, results);
